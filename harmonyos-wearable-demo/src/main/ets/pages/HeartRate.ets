@@ -1,73 +1,73 @@
 /**
- * HeartRate.ets - Kalp Atışı Monitör Sayfası
+ * HeartRate.ets - Heart Rate Monitor Page
  *
- * Gerçek zamanlı BPM izleme, minimum/maksimum/ortalama değerler,
- * taşikardi (>120 BPM) ve bradikardi (<50 BPM) uyarıları.
+ * Real-time BPM monitoring, minimum/maximum/average values,
+ * tachycardia (>120 BPM) and bradycardia (<50 BPM) alerts.
  *
- * @ohos.sensor API ile akselerometre/PPG sensörü entegrasyonu.
- * Gerçek donanım yoksa mock data simülasyonu kullanılır.
+ * Integrates with @ohos.sensor API for accelerometer/PPG sensor.
+ * Falls back to mock data simulation when real hardware is unavailable.
  */
 
 import router from '@ohos.router'
 import sensor from '@ohos.sensor'
 
-// Kalp atışı ölçüm kaydı
+// Heart rate measurement record
 interface HeartRateRecord {
   bpm: number
   timestamp: number
   status: 'normal' | 'high' | 'low' | 'critical'
 }
 
-// BPM eşik değerleri
+// BPM threshold values
 const THRESHOLD = {
-  BRADYCARDIA: 50,    // Bradikardi alt sınırı
-  NORMAL_LOW: 60,     // Normal aralık alt sınırı
-  NORMAL_HIGH: 100,   // Normal aralık üst sınırı
-  TACHYCARDIA: 120    // Taşikardi üst sınırı
+  BRADYCARDIA: 50,    // Bradycardia lower limit
+  NORMAL_LOW: 60,     // Normal range lower limit
+  NORMAL_HIGH: 100,   // Normal range upper limit
+  TACHYCARDIA: 120    // Tachycardia upper limit
 }
 
 @Entry
 @Component
 struct HeartRate {
-  // Anlık BPM değeri
+  // Current BPM value
   @State private currentBPM: number = 72
 
-  // İstatistik değerleri
+  // Statistics values
   @State private minBPM: number = 72
   @State private maxBPM: number = 72
   @State private avgBPM: number = 72
 
-  // Ölçüm geçmişi (son 20 değer)
+  // Measurement history (last 20 values)
   @State private history: HeartRateRecord[] = []
 
-  // Ölçüm durumu
+  // Measurement state
   @State private isMeasuring: boolean = false
   @State private measureProgress: number = 0
-  @State private statusMessage: string = 'Ölçüm başlatmak için dokunun'
+  @State private statusMessage: string = 'Tap to start measuring'
   @State private alertMessage: string = ''
   @State private showAlert: boolean = false
 
-  // Nabız animasyonu
+  // Pulse animation
   @State private pulseScale: number = 1.0
 
-  // Zamanlayıcılar
+  // Timers
   private measureTimer: number = -1
   private pulseTimer: number = -1
   private mockDataTimer: number = -1
   private sensorSubscribed: boolean = false
 
   /**
-   * Bileşen yüklendiğinde başlangıç verilerini hazırla
+   * Prepare initial data when component loads
    */
   aboutToAppear() {
     this.initMockHistory()
     this.startPulseAnimation()
-    // İlk ölçümü otomatik başlat
+    // Auto-start first measurement
     this.startMeasurement()
   }
 
   /**
-   * Bileşen yok edildiğinde kaynakları temizle
+   * Clean up resources when component is destroyed
    */
   aboutToDisappear() {
     this.stopAllTimers()
@@ -75,7 +75,7 @@ struct HeartRate {
   }
 
   /**
-   * Tüm zamanlayıcıları durdur
+   * Stop all timers
    */
   private stopAllTimers() {
     if (this.measureTimer !== -1) clearInterval(this.measureTimer)
@@ -84,20 +84,20 @@ struct HeartRate {
   }
 
   /**
-   * Nabız animasyonu - kalp atışı efekti
+   * Pulse animation - heartbeat effect
    */
   private startPulseAnimation() {
     this.pulseTimer = setInterval(() => {
-      // Kalp ikonunu büyüt/küçült animasyonu
+      // Grow/shrink heart icon animation
       this.pulseScale = 1.2
       setTimeout(() => {
         this.pulseScale = 1.0
       }, 150)
-    }, 60000 / Math.max(this.currentBPM, 40)) // BPM'e göre hız ayarla
+    }, 60000 / Math.max(this.currentBPM, 40)) // Speed based on BPM
   }
 
   /**
-   * Başlangıç için 10 mock geçmiş kaydı oluştur
+   * Generate 10 mock history records for initial display
    */
   private initMockHistory() {
     const baseTime = Date.now()
@@ -105,7 +105,7 @@ struct HeartRate {
       const bpm = 65 + Math.floor(Math.random() * 20)
       this.history.push({
         bpm,
-        timestamp: baseTime - i * 300000, // 5 dakika aralıklı
+        timestamp: baseTime - i * 300000, // 5-minute intervals
         status: this.getBPMStatus(bpm)
       })
     }
@@ -113,7 +113,7 @@ struct HeartRate {
   }
 
   /**
-   * BPM değerine göre durum döndürür
+   * Returns status based on BPM value
    */
   private getBPMStatus(bpm: number): 'normal' | 'high' | 'low' | 'critical' {
     if (bpm >= THRESHOLD.TACHYCARDIA) return 'critical'
@@ -124,7 +124,7 @@ struct HeartRate {
   }
 
   /**
-   * Min/Maks/Ort istatistiklerini yeniden hesapla
+   * Recalculate Min/Max/Avg statistics
    */
   private recalculateStats() {
     if (this.history.length === 0) return
@@ -135,28 +135,28 @@ struct HeartRate {
   }
 
   /**
-   * Kalp atışı sensörüne abone olmayı dene.
-   * Başarısız olursa mock data'ya geç.
+   * Attempt to subscribe to heart rate sensor.
+   * Falls back to mock data on failure.
    */
   private subscribeSensor() {
     try {
-      // HarmonyOS PPG sensörü (kalp atışı için)
+      // HarmonyOS PPG sensor (for heart rate)
       sensor.on(sensor.SensorId.HEART_RATE, (data: sensor.HeartRateResponse) => {
         if (data && data.heartRate > 0) {
           this.updateBPM(data.heartRate)
         }
-      }, { interval: 1000000000 }) // 1 saniye aralık (nanosecond)
+      }, { interval: 1000000000 }) // 1 second interval (nanoseconds)
       this.sensorSubscribed = true
-      console.info('[HeartRate] Gerçek sensör bağlandı')
+      console.info('[HeartRate] Real sensor connected')
     } catch (error) {
-      // Sensör mevcut değil, mock kullan
-      console.warn(`[HeartRate] Sensör bağlanamadı, mock kullanılıyor: ${JSON.stringify(error)}`)
+      // Sensor unavailable, use mock
+      console.warn(`[HeartRate] Sensor unavailable, using mock: ${JSON.stringify(error)}`)
       this.startMockSensor()
     }
   }
 
   /**
-   * Sensör aboneliğini iptal et
+   * Unsubscribe from sensor
    */
   private unsubscribeSensor() {
     if (this.sensorSubscribed) {
@@ -164,16 +164,16 @@ struct HeartRate {
         sensor.off(sensor.SensorId.HEART_RATE)
         this.sensorSubscribed = false
       } catch (e) {
-        console.warn('[HeartRate] Sensör aboneliği iptal edilemedi')
+        console.warn('[HeartRate] Failed to unsubscribe from sensor')
       }
     }
   }
 
   /**
-   * Mock sensör simülasyonu - 1 saniyede bir BPM günceller
+   * Mock sensor simulation - updates BPM every second
    */
   private startMockSensor() {
-    // Gerçekçi kalp atışı simülasyonu
+    // Realistic heart rate simulation
     let trend = 0
     this.mockDataTimer = setInterval(() => {
       trend += (Math.random() - 0.5) * 0.5
@@ -184,29 +184,29 @@ struct HeartRate {
   }
 
   /**
-   * BPM değerini güncelle ve uyarı kontrolü yap
+   * Update BPM value and check for alerts
    */
   private updateBPM(bpm: number) {
     this.currentBPM = bpm
     const status = this.getBPMStatus(bpm)
 
-    // Taşikardi kontrolü
+    // Tachycardia check
     if (status === 'critical' && bpm >= THRESHOLD.TACHYCARDIA) {
-      this.alertMessage = `⚠️ TAŞİKARDİ UYARISI\nKalp atışınız çok yüksek: ${bpm} BPM`
+      this.alertMessage = `⚠️ TACHYCARDIA ALERT\nYour heart rate is too high: ${bpm} BPM`
       this.showAlert = true
     } else if (status === 'critical' && bpm < THRESHOLD.BRADYCARDIA) {
-      this.alertMessage = `⚠️ BRADİKARDİ UYARISI\nKalp atışınız çok düşük: ${bpm} BPM`
+      this.alertMessage = `⚠️ BRADYCARDIA ALERT\nYour heart rate is too low: ${bpm} BPM`
       this.showAlert = true
     } else {
       this.showAlert = false
     }
 
-    // Geçmişe kaydet (her 10 saniyede bir)
+    // Save to history (every 10 seconds)
     const now = Date.now()
     const lastRecord = this.history[this.history.length - 1]
     if (!lastRecord || now - lastRecord.timestamp > 10000) {
       this.history.push({ bpm, timestamp: now, status })
-      // Son 50 kaydı tut
+      // Keep last 50 records
       if (this.history.length > 50) {
         this.history = this.history.slice(-50)
       }
@@ -215,15 +215,15 @@ struct HeartRate {
   }
 
   /**
-   * 30 saniyelik aktif ölçüm döngüsü başlat
+   * Start a 30-second active measurement cycle
    */
   private startMeasurement() {
     this.isMeasuring = true
     this.measureProgress = 0
-    this.statusMessage = 'Ölçülüyor...'
+    this.statusMessage = 'Measuring...'
     this.subscribeSensor()
 
-    // 30 saniye ilerleme çubuğu
+    // 30-second progress bar
     let elapsed = 0
     this.measureTimer = setInterval(() => {
       elapsed += 1
@@ -231,14 +231,14 @@ struct HeartRate {
       if (elapsed >= 30) {
         clearInterval(this.measureTimer)
         this.isMeasuring = false
-        this.statusMessage = 'Ölçüm tamamlandı'
-        // Continuous monitoring moduna geç
+        this.statusMessage = 'Measurement complete'
+        // Switch to continuous monitoring mode
       }
     }, 1000)
   }
 
   /**
-   * Durum rengini döndür
+   * Returns status color
    */
   private getStatusColor(): string {
     const status = this.getBPMStatus(this.currentBPM)
@@ -251,20 +251,20 @@ struct HeartRate {
   }
 
   /**
-   * Durum mesajını döndür
+   * Returns status label
    */
   private getBPMLabel(): string {
     const status = this.getBPMStatus(this.currentBPM)
     switch (status) {
-      case 'critical': return this.currentBPM >= THRESHOLD.TACHYCARDIA ? 'TAŞİKARDİ' : 'BRADİKARDİ'
-      case 'high': return 'YÜKSEK'
-      case 'low': return 'DÜŞÜK'
+      case 'critical': return this.currentBPM >= THRESHOLD.TACHYCARDIA ? 'TACHYCARDIA' : 'BRADYCARDIA'
+      case 'high': return 'HIGH'
+      case 'low': return 'LOW'
       default: return 'NORMAL'
     }
   }
 
   /**
-   * BPM grafik çubuğu yüksekliğini hesapla
+   * Calculate bar height for BPM chart
    */
   private getBarHeight(bpm: number): number {
     const minH = 8
@@ -275,9 +275,9 @@ struct HeartRate {
 
   build() {
     Stack() {
-      // ── Ana İçerik ──────────────────────────────────────────────
+      // ── Main Content ────────────────────────────────────────────
       Column() {
-        // Geri Butonu ve Başlık
+        // Back Button and Title
         Row() {
           Button('←')
             .fontSize(18)
@@ -288,14 +288,14 @@ struct HeartRate {
             .borderRadius(18)
             .onClick(() => router.back())
 
-          Text('Kalp Atışı')
+          Text('Heart Rate')
             .fontSize(16)
             .fontColor('#FFFFFF')
             .fontWeight(FontWeight.Bold)
             .layoutWeight(1)
             .textAlign(TextAlign.Center)
 
-          // Boş alan - hizalama için
+          // Empty space - for alignment
           Column().width(36)
         }
         .width('100%')
@@ -304,9 +304,9 @@ struct HeartRate {
         Scroll() {
           Column({ space: 10 }) {
 
-            // ── Anlık BPM Göstergesi ──────────────────────────────
+            // ── Live BPM Display ──────────────────────────────────
             Column() {
-              // Kalp İkonu (nabız animasyonu ile)
+              // Heart Icon (with pulse animation)
               Text('❤️')
                 .fontSize(32)
                 .scale({ x: this.pulseScale, y: this.pulseScale })
@@ -315,7 +315,7 @@ struct HeartRate {
                   curve: Curve.EaseOut
                 })
 
-              // BPM Değeri
+              // BPM Value
               Text(this.currentBPM.toString())
                 .fontSize(48)
                 .fontColor(this.getStatusColor())
@@ -326,7 +326,7 @@ struct HeartRate {
                 .fontSize(14)
                 .fontColor('#888888')
 
-              // Durum Etiketi
+              // Status Label
               Text(this.getBPMLabel())
                 .fontSize(12)
                 .fontColor(this.getStatusColor())
@@ -336,7 +336,7 @@ struct HeartRate {
                 .padding({ left: 10, right: 10, top: 3, bottom: 3 })
                 .margin({ top: 6 })
 
-              // Ölçüm İlerleme Çubuğu
+              // Measurement Progress Bar
               if (this.isMeasuring) {
                 Column() {
                   Progress({
@@ -363,7 +363,7 @@ struct HeartRate {
             .borderRadius(16)
             .alignItems(HorizontalAlign.Center)
 
-            // ── İstatistik Kartları ───────────────────────────────
+            // ── Statistics Cards ──────────────────────────────────
             Row({ space: 8 }) {
               // Min
               Column() {
@@ -384,9 +384,9 @@ struct HeartRate {
               .borderRadius(12)
               .alignItems(HorizontalAlign.Center)
 
-              // Ortalama
+              // Average
               Column() {
-                Text('⌀ ORT')
+                Text('⌀ AVG')
                   .fontSize(9)
                   .fontColor('#888888')
                 Text(this.avgBPM.toString())
@@ -423,9 +423,9 @@ struct HeartRate {
               .alignItems(HorizontalAlign.Center)
             }
 
-            // ── Mini BPM Grafik ───────────────────────────────────
+            // ── Mini BPM Chart ────────────────────────────────────
             Column() {
-              Text('Son Ölçümler')
+              Text('Recent Readings')
                 .fontSize(11)
                 .fontColor('#AAAAAA')
                 .width('100%')
@@ -454,19 +454,19 @@ struct HeartRate {
             .backgroundColor('#111111')
             .borderRadius(12)
 
-            // ── Kalp Atışı Bölgeleri ──────────────────────────────
+            // ── Heart Rate Zones ──────────────────────────────────
             Column({ space: 6 }) {
-              Text('Kalp Atışı Bölgeleri')
+              Text('Heart Rate Zones')
                 .fontSize(11)
                 .fontColor('#AAAAAA')
                 .width('100%')
                 .textAlign(TextAlign.Start)
 
-              // Her bölge satırı
-              this.HeartRateZoneRow('Bradikardi', '< 50 BPM', '#4169E1', 50)
+              // Each zone row
+              this.HeartRateZoneRow('Bradycardia', '< 50 BPM', '#4169E1', 50)
               this.HeartRateZoneRow('Normal', '60–100 BPM', '#00C853', 100)
-              this.HeartRateZoneRow('Yüksek', '100–120 BPM', '#FFA500', 120)
-              this.HeartRateZoneRow('Taşikardi', '> 120 BPM', '#FF4444', 140)
+              this.HeartRateZoneRow('Elevated', '100–120 BPM', '#FFA500', 120)
+              this.HeartRateZoneRow('Tachycardia', '> 120 BPM', '#FF4444', 140)
             }
             .width('100%')
             .padding(12)
@@ -483,7 +483,7 @@ struct HeartRate {
       .height('100%')
       .backgroundColor('#000000')
 
-      // ── Taşikardi/Bradikardi Uyarı Katmanı ──────────────────────
+      // ── Tachycardia/Bradycardia Alert Overlay ────────────────────
       if (this.showAlert) {
         Column() {
           Text(this.alertMessage)
@@ -507,7 +507,7 @@ struct HeartRate {
   }
 
   /**
-   * Kalp atışı bölgesi satırı oluştur
+   * Build a heart rate zone row
    */
   @Builder
   HeartRateZoneRow(label: string, range: string, color: string, limit: number) {
@@ -528,7 +528,7 @@ struct HeartRate {
         .fontSize(10)
         .fontColor('#888888')
 
-      // Mevcut değer bu bölgedeyse gösterge
+      // Indicator if current value is in this zone
       if (this.getBPMStatus(this.currentBPM) !== 'normal' &&
           Math.abs(this.currentBPM - limit) < 25) {
         Text(' ←')

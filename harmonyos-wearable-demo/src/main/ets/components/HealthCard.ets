@@ -1,12 +1,12 @@
 /**
- * HealthCard.ets - Tekrar Kullanılabilir Sağlık Metrik Kartı
+ * HealthCard.ets - Reusable Health Metric Card Component
  *
- * Başlık, değer, birim, ikon ve trend göstergesi içeren
- * wearable ekranına uygun kompakt sağlık kartı bileşeni.
+ * A compact health card component suitable for wearable screens,
+ * containing a title, value, unit, icon, and trend indicator.
  *
- * Kullanım:
+ * Usage:
  * HealthCard({
- *   title: 'Kalp Atışı',
+ *   title: 'Heart Rate',
  *   value: '72',
  *   unit: 'BPM',
  *   iconName: '💓',
@@ -16,43 +16,43 @@
  * })
  */
 
-// Trend yönü tipi
+// Trend direction type
 type TrendDirection = 'up' | 'down' | 'stable'
 
 /**
- * HealthCard bileşeni prop arayüzü
+ * HealthCard component
  */
 @Component
 export struct HealthCard {
-  // Kart başlığı (örn: "Kalp Atışı")
+  // Card title (e.g., "Heart Rate")
   @Prop title: string = ''
 
-  // Gösterilecek ana değer (örn: "72")
+  // Main value to display (e.g., "72")
   @Prop value: string = '—'
 
-  // Değer birimi (örn: "BPM", "adım", "kcal")
+  // Value unit (e.g., "BPM", "steps", "kcal")
   @Prop unit: string = ''
 
-  // Emoji veya metin ikon (örn: "💓", "👟")
+  // Emoji or text icon (e.g., "💓", "👟")
   @Prop iconName: string = '📊'
 
-  // Trend yönü: 'up' | 'down' | 'stable'
+  // Trend direction: 'up' | 'down' | 'stable'
   @Prop trend: TrendDirection = 'stable'
 
-  // Vurgu rengi (progress, ikonlar, border için)
+  // Accent color (for progress, icons, border)
   @Prop accentColor: string = '#00C853'
 
-  // Alt açıklama metni (isteğe bağlı)
+  // Optional subtitle text
   @Prop subtitle: string = ''
 
-  // Tıklama işleyicisi
+  // Click handler
   onClick: () => void = () => {}
 
-  // Kart basılı durumu (animasyon için)
+  // Card pressed state (for animation)
   @State private isPressed: boolean = false
 
   /**
-   * Trend simgesini döndür
+   * Returns the trend icon
    */
   private getTrendIcon(): string {
     switch (this.trend) {
@@ -63,7 +63,7 @@ export struct HealthCard {
   }
 
   /**
-   * Trend rengini döndür
+   * Returns the trend color
    */
   private getTrendColor(): string {
     switch (this.trend) {
@@ -75,7 +75,7 @@ export struct HealthCard {
 
   build() {
     Row() {
-      // ── Sol: İkon Bölgesi ─────────────────────────────────────
+      // ── Left: Icon Area ───────────────────────────────────────
       Column() {
         Text(this.iconName)
           .fontSize(24)
@@ -87,7 +87,7 @@ export struct HealthCard {
       .justifyContent(FlexAlign.Center)
       .alignItems(HorizontalAlign.Center)
 
-      // ── Orta: Başlık ve Değer ─────────────────────────────────
+      // ── Center: Title and Value ───────────────────────────────
       Column() {
         Text(this.title)
           .fontSize(10)
@@ -122,7 +122,7 @@ export struct HealthCard {
       .padding({ left: 10 })
       .alignItems(HorizontalAlign.Start)
 
-      // ── Sağ: Trend Göstergesi ve Ok ──────────────────────────
+      // ── Right: Trend Indicator and Arrow ─────────────────────
       Column({ space: 2 }) {
         Text(this.getTrendIcon())
           .fontSize(14)

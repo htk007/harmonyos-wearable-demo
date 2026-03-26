@@ -1,48 +1,48 @@
 /**
- * StepCounter.ets - Adım Sayar Sayfası
+ * StepCounter.ets - Step Counter Page
  *
- * Günlük adım hedefi takibi (varsayılan: 10.000 adım),
- * dairesel progress göstergesi, kalori tahmini ve mesafe hesaplama.
+ * Daily step goal tracking (default: 10,000 steps),
+ * circular progress indicator, calorie estimation, and distance calculation.
  *
- * @ohos.sensor API ile pedometer sensörü entegrasyonu.
- * Gerçek donanım yoksa mock data simülasyonu kullanılır.
+ * Integrates with @ohos.sensor API for pedometer sensor.
+ * Falls back to mock data simulation when real hardware is unavailable.
  */
 
 import router from '@ohos.router'
 import sensor from '@ohos.sensor'
 import { RingProgress } from '../components/RingProgress'
 
-// Günlük adım kaydı
+// Daily step record
 interface DailyStepRecord {
-  hour: number       // Saat (0-23)
-  steps: number      // O saatte atılan adım
-  active: boolean    // Aktif saat mi?
+  hour: number       // Hour (0-23)
+  steps: number      // Steps taken in that hour
+  active: boolean    // Was it an active hour?
 }
 
-// Adım sayar istatistikleri
+// Step counter statistics
 interface StepStats {
   totalSteps: number
   dailyGoal: number
   calories: number
   distanceKm: number
   activeMinutes: number
-  currentPace: number    // Adım/dakika
+  currentPace: number    // Steps per minute
 }
 
-// Kullanıcı parametreleri (kalori/mesafe hesabı için)
+// User parameters (for calorie/distance calculation)
 const USER_PARAMS = {
   WEIGHT_KG: 70,
   HEIGHT_CM: 175,
-  STRIDE_LENGTH_M: 0.78  // Ortalama adım uzunluğu (metre)
+  STRIDE_LENGTH_M: 0.78  // Average stride length (meters)
 }
 
-// MET değeri (yürüme için metabolik eşdeğer)
+// MET value (metabolic equivalent for walking)
 const WALKING_MET = 3.5
 
 @Entry
 @Component
 struct StepCounter {
-  // Adım istatistikleri
+  // Step statistics
   @State private stats: StepStats = {
     totalSteps: 7842,
     dailyGoal: 10000,
@@ -52,23 +52,23 @@ struct StepCounter {
     currentPace: 0
   }
 
-  // Saatlik dağılım grafiği verileri
+  // Hourly distribution chart data
   @State private hourlyData: DailyStepRecord[] = []
 
-  // Canlı adım sayacı animasyon değeri
+  // Live step counter animation value
   @State private displayedSteps: number = 0
 
-  // Aktif sayma durumu
+  // Active tracking state
   @State private isTracking: boolean = true
-  @State private statusMessage: string = 'Takip aktif'
+  @State private statusMessage: string = 'Tracking active'
 
-  // Pedometer sensörü bağlı mı?
+  // Pedometer sensor connected?
   private sensorConnected: boolean = false
   private mockStepTimer: number = -1
   private animationTimer: number = -1
 
   /**
-   * Başlangıçta verileri hazırla ve sensörü başlat
+   * Initialize data and start sensor on mount
    */
   aboutToAppear() {
     this.generateHourlyData()
@@ -77,7 +77,7 @@ struct StepCounter {
   }
 
   /**
-   * Temizleme
+   * Cleanup on unmount
    */
   aboutToDisappear() {
     if (this.mockStepTimer !== -1) clearInterval(this.mockStepTimer)
@@ -86,13 +86,13 @@ struct StepCounter {
       try {
         sensor.off(sensor.SensorId.PEDOMETER)
       } catch (e) {
-        // Hata durumunda sessizce geç
+        // Silently ignore errors
       }
     }
   }
 
   /**
-   * Adım sayısını animasyonlu göster (0'dan başlayıp mevcut değere çıkar)
+   * Animate step count from 0 to current value
    */
   private animateStepCount() {
     const target = this.stats.totalSteps
@@ -113,7 +113,7 @@ struct StepCounter {
   }
 
   /**
-   * Son 24 saatlik saatlik adım dağılımını oluştur
+   * Generate hourly step distribution for the last 24 hours
    */
   private generateHourlyData() {
     const currentHour = new Date().getHours()
@@ -125,19 +125,19 @@ struct StepCounter {
 
       if (h <= currentHour) {
         if (h >= 7 && h <= 9) {
-          // Sabah rutini
+          // Morning routine
           steps = 400 + Math.floor(Math.random() * 300)
           active = true
         } else if (h >= 12 && h <= 13) {
-          // Öğle yürüyüşü
+          // Lunch walk
           steps = 800 + Math.floor(Math.random() * 400)
           active = true
         } else if (h >= 17 && h <= 19) {
-          // Akşam yürüyüşü
+          // Evening walk
           steps = 1200 + Math.floor(Math.random() * 600)
           active = true
         } else if (h >= 6 && h <= currentHour) {
-          // Diğer aktif saatler
+          // Other active hours
           steps = Math.floor(Math.random() * 200)
           active = steps > 50
         }
@@ -149,7 +149,7 @@ struct StepCounter {
   }
 
   /**
-   * Pedometer sensörüne abone ol
+   * Subscribe to pedometer sensor
    */
   private subscribePedometer() {
     try {
@@ -159,15 +159,15 @@ struct StepCounter {
           this.sensorConnected = true
         }
       }, { interval: 1000000000 })
-      console.info('[StepCounter] Pedometer sensörü bağlandı')
+      console.info('[StepCounter] Pedometer sensor connected')
     } catch (error) {
-      console.warn(`[StepCounter] Pedometer bağlanamadı: ${JSON.stringify(error)}, mock kullanılıyor`)
+      console.warn(`[StepCounter] Pedometer unavailable: ${JSON.stringify(error)}, using mock`)
       this.startMockPedometer()
     }
   }
 
   /**
-   * Mock pedometer - her 2-4 saniyede 1-5 adım ekler
+   * Mock pedometer - adds 1-5 steps every 2-4 seconds
    */
   private startMockPedometer() {
     this.mockStepTimer = setInterval(() => {
@@ -179,7 +179,7 @@ struct StepCounter {
   }
 
   /**
-   * Yeni adımları istatistiklere ekle ve kalori/mesafeyi güncelle
+   * Add new steps to statistics and update calorie/distance
    */
   private addSteps(newSteps: number) {
     const updatedTotal = this.stats.totalSteps + newSteps
@@ -188,64 +188,64 @@ struct StepCounter {
       totalSteps: Math.min(updatedTotal, this.stats.dailyGoal * 2),
       calories: this.calculateCalories(updatedTotal),
       distanceKm: this.calculateDistance(updatedTotal),
-      currentPace: newSteps * 30  // Yaklaşık adım/dakika
+      currentPace: newSteps * 30  // Approximate steps per minute
     }
     this.displayedSteps = this.stats.totalSteps
   }
 
   /**
-   * Kalori hesaplama formülü
-   * Kalori = (MET × Ağırlık × Süre_saat)
-   * Süre = Adım / Hız(adım/saat)
+   * Calorie calculation formula
+   * Calories = (MET × Weight × Duration_hours)
+   * Duration = Steps / Speed(steps/hour)
    */
   private calculateCalories(steps: number): number {
-    const hoursWalked = steps / 5000  // ~5000 adım/saat varsayımı
+    const hoursWalked = steps / 5000  // ~5000 steps/hour assumption
     return Math.round(WALKING_MET * USER_PARAMS.WEIGHT_KG * hoursWalked)
   }
 
   /**
-   * Mesafe hesaplama: Adım × Adım Uzunluğu
+   * Distance calculation: Steps × Stride Length
    */
   private calculateDistance(steps: number): number {
     return Math.round((steps * USER_PARAMS.STRIDE_LENGTH_M) / 100) / 10
   }
 
   /**
-   * İlerleme yüzdesi (0.0 - 1.0)
+   * Progress percentage (0.0 - 1.0)
    */
   private getProgress(): number {
     return Math.min(1.0, this.stats.totalSteps / this.stats.dailyGoal)
   }
 
   /**
-   * Hedef tamamlama mesajı
+   * Goal completion motivation message
    */
   private getMotivationMessage(): string {
     const progress = this.getProgress()
     const remaining = this.stats.dailyGoal - this.stats.totalSteps
 
-    if (progress >= 1.0) return '🎉 Günlük hedefe ulaştın!'
-    if (progress >= 0.9) return `Neredeyse! ${remaining} adım kaldı`
-    if (progress >= 0.75) return `Harika gidiyorsun! ${remaining} adım kaldı`
-    if (progress >= 0.5) return `Yarı yoldasın! ${remaining} adım kaldı`
-    if (progress >= 0.25) return `Devam et! ${remaining} adım kaldı`
-    return `Hadi başla! ${remaining} adım kaldı`
+    if (progress >= 1.0) return '🎉 Daily goal reached!'
+    if (progress >= 0.9) return `Almost there! ${remaining} steps to go`
+    if (progress >= 0.75) return `Great progress! ${remaining} steps to go`
+    if (progress >= 0.5) return `Halfway there! ${remaining} steps to go`
+    if (progress >= 0.25) return `Keep going! ${remaining} steps to go`
+    return `Let's get moving! ${remaining} steps to go`
   }
 
   /**
-   * Progress rengini ilerlemeye göre belirle
+   * Progress color based on completion
    */
   private getProgressColor(): string {
     const p = this.getProgress()
-    if (p >= 1.0) return '#FFD700'  // Altın - tamamlandı
-    if (p >= 0.75) return '#00C853' // Yeşil - çok iyi
-    if (p >= 0.5) return '#4FC3F7'  // Mavi - iyi
-    if (p >= 0.25) return '#FFA500' // Turuncu - orta
-    return '#FF6B35'                 // Kırmızı - az
+    if (p >= 1.0) return '#FFD700'  // Gold - complete
+    if (p >= 0.75) return '#00C853' // Green - great
+    if (p >= 0.5) return '#4FC3F7'  // Blue - good
+    if (p >= 0.25) return '#FFA500' // Orange - fair
+    return '#FF6B35'                 // Red - low
   }
 
   /**
-   * Saatlik grafikte maksimum adımı bul
+   * Find maximum steps in hourly chart
    */
   private getMaxHourlySteps(): number {
     return Math.max(...this.hourlyData.map(d => d.steps), 1)
@@ -253,7 +253,7 @@ struct StepCounter {
 
   build() {
     Column() {
-      // ── Başlık Çubuğu ────────────────────────────────────────────
+      // ── Title Bar ─────────────────────────────────────────────
       Row() {
         Button('←')
           .fontSize(18)
@@ -264,19 +264,19 @@ struct StepCounter {
           .borderRadius(18)
           .onClick(() => router.back())
 
-        Text('Adım Sayar')
+        Text('Step Counter')
           .fontSize(16)
           .fontColor('#FFFFFF')
           .fontWeight(FontWeight.Bold)
           .layoutWeight(1)
           .textAlign(TextAlign.Center)
 
-        // Takip Durumu Toggle
+        // Tracking toggle
         Toggle({ type: ToggleType.Switch, isOn: this.isTracking })
           .selectedColor('#00C853')
           .onChange((isOn: boolean) => {
             this.isTracking = isOn
-            this.statusMessage = isOn ? 'Takip aktif' : 'Takip duraklatıldı'
+            this.statusMessage = isOn ? 'Tracking active' : 'Tracking paused'
           })
           .width(36)
           .height(20)
@@ -287,7 +287,7 @@ struct StepCounter {
       Scroll() {
         Column({ space: 10 }) {
 
-          // ── Ana Dairesel Progress ─────────────────────────────────
+          // ── Main Circular Progress ────────────────────────────
           Column() {
             RingProgress({
               progress: this.getProgress(),
@@ -306,7 +306,7 @@ struct StepCounter {
                     .fontSize(11)
                     .fontColor('#888888')
 
-                  Text('ADIM')
+                  Text('STEPS')
                     .fontSize(9)
                     .fontColor('#666666')
                     .margin({ top: 2 })
@@ -321,7 +321,7 @@ struct StepCounter {
               .margin({ top: 8 })
               .width('90%')
 
-            // Durum göstergesi
+            // Status indicator
             Row() {
               Circle({ width: 6, height: 6 })
                 .fill(this.isTracking ? '#00C853' : '#888888')
@@ -337,9 +337,9 @@ struct StepCounter {
           .borderRadius(16)
           .alignItems(HorizontalAlign.Center)
 
-          // ── İstatistik Kartları Izgara ────────────────────────────
+          // ── Statistics Grid ───────────────────────────────────
           Grid() {
-            // Kalori
+            // Calories
             GridItem() {
               Column() {
                 Text('🔥')
@@ -360,7 +360,7 @@ struct StepCounter {
               .alignItems(HorizontalAlign.Center)
             }
 
-            // Mesafe
+            // Distance
             GridItem() {
               Column() {
                 Text('📍')
@@ -381,7 +381,7 @@ struct StepCounter {
               .alignItems(HorizontalAlign.Center)
             }
 
-            // Aktif Dakika
+            // Active Minutes
             GridItem() {
               Column() {
                 Text('⏱️')
@@ -391,7 +391,7 @@ struct StepCounter {
                   .fontColor('#FFD700')
                   .fontWeight(FontWeight.Bold)
                   .margin({ top: 4 })
-                Text('dk aktif')
+                Text('min active')
                   .fontSize(10)
                   .fontColor('#888888')
               }
@@ -402,7 +402,7 @@ struct StepCounter {
               .alignItems(HorizontalAlign.Center)
             }
 
-            // Günlük Tamamlama %
+            // Daily Completion %
             GridItem() {
               Column() {
                 Text('🎯')
@@ -412,7 +412,7 @@ struct StepCounter {
                   .fontColor(this.getProgressColor())
                   .fontWeight(FontWeight.Bold)
                   .margin({ top: 4 })
-                Text('hedef')
+                Text('goal')
                   .fontSize(10)
                   .fontColor('#888888')
               }
@@ -428,16 +428,16 @@ struct StepCounter {
           .columnsGap(8)
           .width('100%')
 
-          // ── Saatlik Adım Grafiği ──────────────────────────────────
+          // ── Hourly Step Chart ─────────────────────────────────
           Column() {
-            Text('Saatlik Dağılım')
+            Text('Hourly Distribution')
               .fontSize(11)
               .fontColor('#AAAAAA')
               .width('100%')
               .textAlign(TextAlign.Start)
               .margin({ bottom: 8 })
 
-            // Grafik çubukları
+            // Chart bars
             Row({ space: 1 }) {
               ForEach(this.hourlyData, (record: DailyStepRecord) => {
                 Column()
@@ -457,7 +457,7 @@ struct StepCounter {
             .height(44)
             .alignItems(VerticalAlign.Bottom)
 
-            // Saat etiketleri (sadece önemli saatler)
+            // Hour labels (key hours only)
             Row() {
               Text('00')
                 .fontSize(8)
@@ -487,9 +487,9 @@ struct StepCounter {
           .backgroundColor('#111111')
           .borderRadius(12)
 
-          // ── Adım Hedefi Ayarı ─────────────────────────────────────
+          // ── Daily Goal Selector ───────────────────────────────
           Column() {
-            Text('Günlük Hedef')
+            Text('Daily Goal')
               .fontSize(11)
               .fontColor('#AAAAAA')
               .width('100%')

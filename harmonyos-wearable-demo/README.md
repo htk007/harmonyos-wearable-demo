@@ -1,29 +1,27 @@
 # HarmonyOS Wearable Health Demo
 
-> ArkTS ile yazılmış, HarmonyOS wearable ekosistemi için kapsamlı sağlık takip demo uygulaması.
+> A comprehensive health tracking demo application written in ArkTS for the HarmonyOS wearable ecosystem.
 
 ---
 
-## Genel Bakış / Overview
+## Overview
 
-Bu proje, HarmonyOS wearable (akıllı saat) platformu için geliştirilmiş bir **sağlık monitörü demo uygulamasıdır**. Developer Advocate ekibi tarafından, geliştiricilerin HarmonyOS Wearable API'lerini öğrenmelerine yardımcı olmak amacıyla oluşturulmuştur.
-
-> This project is a **health monitor demo application** built for the HarmonyOS wearable (smartwatch) platform. Created by the Developer Advocate team to help developers learn HarmonyOS Wearable APIs.
+This project is a **health monitor demo application** built for the HarmonyOS wearable (smartwatch) platform. Created by the Developer Advocate team to help developers learn HarmonyOS Wearable APIs.
 
 ---
 
-## Özellikler / Features
+## Features
 
-| Özellik | Açıklama |
-|---------|----------|
-| 🫀 **Kalp Atışı Monitörü** | Gerçek zamanlı BPM takibi, min/max/ort istatistikler, taşikardi uyarısı |
-| 👣 **Adım Sayar** | Günlük hedef takibi, kalori & mesafe hesabı, saatlik dağılım grafiği |
-| 😴 **Uyku Analizi** | Uyku evresi dağılımı (Derin/REM/Hafif), uyku skoru, 7 günlük geçmiş |
-| 📡 **Telefon Senkronizasyonu** | Distributed Hardware API ile cihazlar arası veri paylaşımı |
+| Feature | Description |
+|---------|-------------|
+| 🫀 **Heart Rate Monitor** | Real-time BPM tracking, min/max/avg statistics, tachycardia alert |
+| 👣 **Step Counter** | Daily goal tracking, calorie & distance calculation, hourly distribution chart |
+| 😴 **Sleep Analysis** | Sleep phase distribution (Deep/REM/Light), sleep score, 7-day history |
+| 📡 **Phone Sync** | Cross-device data sharing via Distributed Hardware API |
 
 ---
 
-## Proje Yapısı / Project Structure
+## Project Structure
 
 ```
 harmonyos-wearable-demo/
@@ -31,27 +29,27 @@ harmonyos-wearable-demo/
 │   └── main/
 │       ├── ets/
 │       │   ├── pages/
-│       │   │   ├── Index.ets          # Ana dashboard
-│       │   │   ├── HeartRate.ets      # Kalp atışı monitörü
-│       │   │   ├── StepCounter.ets    # Adım sayar
-│       │   │   └── SleepTracker.ets   # Uyku analizi
+│       │   │   ├── Index.ets          # Main dashboard
+│       │   │   ├── HeartRate.ets      # Heart rate monitor
+│       │   │   ├── StepCounter.ets    # Step counter
+│       │   │   └── SleepTracker.ets   # Sleep analysis
 │       │   ├── components/
-│       │   │   ├── HealthCard.ets     # Tekrar kullanılabilir sağlık kartı
-│       │   │   └── RingProgress.ets   # Dairesel ilerleme göstergesi
+│       │   │   ├── HealthCard.ets     # Reusable health metric card
+│       │   │   └── RingProgress.ets   # Circular progress indicator
 │       │   └── services/
-│       │       ├── HealthSensorService.ets  # Sensör yönetimi
-│       │       └── DataSyncService.ets      # Cihaz senkronizasyonu
+│       │       ├── HealthSensorService.ets  # Sensor management
+│       │       └── DataSyncService.ets      # Device synchronization
 │       └── resources/
 │           └── base/profile/
-│               └── main_pages.json    # Sayfa rotaları
-├── module.json5                       # Modül konfigürasyonu
-├── build-profile.json5                # Build ayarları
+│               └── main_pages.json    # Page routes
+├── module.json5                       # Module configuration
+├── build-profile.json5                # Build settings
 └── README.md
 ```
 
 ---
 
-## Kullanılan API'ler / APIs Used
+## APIs Used
 
 ```typescript
 @ohos.sensor           // Pedometer, HeartRate, Accelerometer
@@ -60,7 +58,7 @@ harmonyos-wearable-demo/
 @ohos.vibrator         // Haptic feedback
 ```
 
-### Gerekli İzinler / Required Permissions
+### Required Permissions
 
 ```json
 "requestPermissions": [
@@ -75,46 +73,46 @@ harmonyos-wearable-demo/
 
 ---
 
-## Kurulum / Setup
+## Setup
 
-### Gereksinimler / Prerequisites
+### Prerequisites
 
-- **DevEco Studio** 4.1 veya üzeri
+- **DevEco Studio** 4.1 or higher
 - **HarmonyOS SDK** API Level 11+
-- **Wearable Emulator** veya gerçek HarmonyOS wearable cihaz
+- **Wearable Emulator** or a real HarmonyOS wearable device
 
-### Adımlar / Steps
+### Steps
 
 ```bash
-# 1. Projeyi aç / Open project
+# 1. Open project
 # DevEco Studio > File > Open > harmonyos-wearable-demo
 
-# 2. SDK bağımlılıklarını kontrol et / Check SDK dependencies
+# 2. Check SDK dependencies
 # File > Project Structure > SDK Location
 
-# 3. Emülatörü başlat / Start emulator
+# 3. Start emulator
 # Tools > Device Manager > New Emulator > Wearable
 
-# 4. Uygulamayı çalıştır / Run the app
+# 4. Run the app
 # Run > Run 'entry' (Shift+F10)
 ```
 
-### hdc Komutları / hdc Commands
+### hdc Commands
 
 ```bash
-# Cihaz listesi / List devices
+# List connected devices
 hdc list targets
 
-# APK yükle / Install app
+# Install app
 hdc install entry-default-signed.hap
 
-# Log takibi / Follow logs
+# Follow logs
 hdc hilog | grep "HealthDemo"
 ```
 
 ---
 
-## Mimari / Architecture
+## Architecture
 
 ```
 UI Layer (ArkUI Pages)
@@ -128,15 +126,13 @@ HarmonyOS APIs (@ohos.sensor, @ohos.health, @ohos.distributedHardware)
 
 ---
 
-## Demo Notları / Demo Notes
-
-> **Mock Data:** Gerçek sensör donanımı olmadığında uygulama otomatik olarak simüle veri kullanır. `HealthSensorService` içindeki `useMockData` flag'ini `false` yaparak gerçek sensör verisine geçebilirsiniz.
+## Demo Notes
 
 > **Mock Data:** When real sensor hardware is unavailable, the app automatically uses simulated data. Set the `useMockData` flag to `false` in `HealthSensorService` to switch to real sensor data.
 
 ---
 
-## İlgili Kaynaklar / Related Resources
+## Related Resources
 
 - [Getting Started Guide](../docs/getting-started.md)
 - [API Cheatsheet](../docs/api-cheatsheet.md)
@@ -145,7 +141,7 @@ HarmonyOS APIs (@ohos.sensor, @ohos.health, @ohos.distributedHardware)
 
 ---
 
-## Katkıda Bulunanlar / Contributors
+## Contributors
 
-Hazırlayan: **HarmonyOS Developer Advocate Ekibi**
-Versiyon: 1.0.0 | API Level: 11 | Tarih: Mart 2026
+Prepared by: **HarmonyOS Developer Advocate Team**
+Version: 1.0.0 | API Level: 11 | Date: March 2026

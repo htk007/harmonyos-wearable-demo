@@ -1,34 +1,34 @@
 /**
- * DataSyncService.ets - Cihaz Senkronizasyon Servisi
+ * DataSyncService.ets - Device Synchronization Service
  *
- * HarmonyOS Distributed Hardware API (@ohos.distributedHardware.deviceManager)
- * kullanarak wearable - telefon arası veri senkronizasyonu.
+ * Wearable-to-phone data synchronization using HarmonyOS
+ * Distributed Hardware API (@ohos.distributedHardware.deviceManager).
  *
- * Özellikler:
- * - Yakındaki cihazları keşfet (Discovery)
- * - Sağlık verilerini telefona aktar
- * - Telefon ayarlarını saate indir
- * - Çevrimdışı durumda lokal önbellek
+ * Features:
+ * - Discover nearby devices (Discovery)
+ * - Transfer health data to phone
+ * - Download phone settings to watch
+ * - Local cache for offline operation
  */
 
 import deviceManager from '@ohos.distributedHardware.deviceManager'
 
-// Senkronizasyon durumu
+// Synchronization status
 export enum SyncStatus {
-  IDLE = 'idle',              // Bekliyor
-  DISCOVERING = 'discovering', // Cihaz keşfediliyor
-  CONNECTING = 'connecting',   // Bağlanıyor
-  SYNCING = 'syncing',        // Senkronize ediliyor
-  COMPLETED = 'completed',    // Tamamlandı
-  FAILED = 'failed',          // Başarısız
-  OFFLINE = 'offline'         // Çevrimdışı
+  IDLE = 'idle',              // Waiting
+  DISCOVERING = 'discovering', // Discovering devices
+  CONNECTING = 'connecting',   // Connecting
+  SYNCING = 'syncing',        // Synchronizing
+  COMPLETED = 'completed',    // Completed
+  FAILED = 'failed',          // Failed
+  OFFLINE = 'offline'         // Offline
 }
 
-// Senkronize edilecek sağlık verisi paketi
+// Health data packet to synchronize
 export interface HealthDataPacket {
-  deviceId: string          // Wearable cihaz ID
-  timestamp: number         // Veri zaman damgası
-  version: string           // Veri paketi versiyonu
+  deviceId: string          // Wearable device ID
+  timestamp: number         // Data timestamp
+  version: string           // Data packet version
   data: {
     steps: DailyStepData[]
     heartRate: HeartRateEntry[]
@@ -37,7 +37,7 @@ export interface HealthDataPacket {
   }
 }
 
-// Günlük adım verisi
+// Daily step data
 export interface DailyStepData {
   date: string        // YYYY-MM-DD
   steps: number
@@ -46,14 +46,14 @@ export interface DailyStepData {
   activeMinutes: number
 }
 
-// Kalp atışı girişi
+// Heart rate entry
 export interface HeartRateEntry {
   timestamp: number
   bpm: number
   status: string
 }
 
-// Uyku kaydı
+// Sleep record
 export interface SleepEntry {
   date: string
   bedTime: string
@@ -64,7 +64,7 @@ export interface SleepEntry {
   remSleepMin: number
 }
 
-// Bağlı cihaz bilgisi
+// Paired device information
 export interface PairedDevice {
   deviceId: string
   deviceName: string
@@ -74,7 +74,7 @@ export interface PairedDevice {
   lastSeenAt: number
 }
 
-// Senkronizasyon sonucu
+// Synchronization result
 export interface SyncResult {
   success: boolean
   deviceId: string
@@ -84,7 +84,7 @@ export interface SyncResult {
 }
 
 /**
- * DataSyncService - Wearable <-> Telefon veri köprüsü
+ * DataSyncService - Wearable <-> Phone data bridge
  */
 export class DataSyncService {
   private static instance: DataSyncService | null = null
@@ -92,28 +92,28 @@ export class DataSyncService {
   // Device Manager instance
   private dmInstance: deviceManager.DeviceManager | null = null
 
-  // Senkronizasyon durumu
+  // Synchronization status
   private syncStatus: SyncStatus = SyncStatus.IDLE
 
-  // Eşleştirilmiş cihazlar listesi
+  // List of paired devices
   private pairedDevices: PairedDevice[] = []
 
-  // Senkronizasyon geçmişi
+  // Synchronization history
   private syncHistory: SyncResult[] = []
 
-  // Lokal veri önbelleği (telefon çevrimdışı olduğunda)
+  // Local data cache (when phone is offline)
   private localCache: HealthDataPacket[] = []
 
-  // Durum değişikliği dinleyicileri
+  // Status change listeners
   private statusListeners: ((status: SyncStatus) => void)[] = []
 
-  // Senkronizasyon zamanlayıcısı (otomatik senkron için)
+  // Sync timer (for automatic sync)
   private autoSyncTimer: number = -1
 
-  // Uygulama bundle ID
+  // Application bundle ID
   private readonly BUNDLE_NAME: string = 'com.harmonyhealth.wearable'
 
-  // Veri paketi versiyonu
+  // Data packet version
   private readonly DATA_VERSION: string = '1.0.0'
 
   private constructor() {
@@ -127,19 +127,19 @@ export class DataSyncService {
     return DataSyncService.instance
   }
 
-  // ────────────────────────────────────────────────────────────────
-  // BAŞLATMA VE KONFİGÜRASYON
-  // ────────────────────────────────────────────────────────────────
+  // ──────────────────────────────────────────────────────────────
+  // INITIALIZATION AND CONFIGURATION
+  // ──────────────────────────────────────────────────────────────
 
   /**
-   * Device Manager'ı başlat ve event listener'ları kaydet
+   * Initialize Device Manager and register event listeners
    */
   private initDeviceManager(): void {
     try {
       deviceManager.createDeviceManager(this.BUNDLE_NAME,
         (err: Error, dm: deviceManager.DeviceManager) => {
           if (err) {
-            console.error(`[DataSyncService] DeviceManager oluşturulamadı: ${err.message}`)
+            console.error(`[DataSyncService] Failed to create DeviceManager: ${err.message}`)
             this.syncStatus = SyncStatus.OFFLINE
             this.initMockMode()
             return
@@ -147,95 +147,95 @@ export class DataSyncService {
 
           this.dmInstance = dm
           this.registerDeviceEvents()
-          console.info('[DataSyncService] DeviceManager başlatıldı')
+          console.info('[DataSyncService] DeviceManager initialized')
 
-          // Mevcut güvenilir cihazları yükle
+          // Load existing trusted devices
           this.loadTrustedDevices()
         }
       )
     } catch (error) {
       const errMsg = error instanceof Error ? error.message : JSON.stringify(error)
-      console.warn(`[DataSyncService] DeviceManager başlatılamadı (${errMsg}), mock mod`)
+      console.warn(`[DataSyncService] DeviceManager init failed (${errMsg}), mock mode`)
       this.syncStatus = SyncStatus.OFFLINE
       this.initMockMode()
     }
   }
 
   /**
-   * Cihaz event listener'larını kaydet
-   * - deviceStateChange: Cihaz durumu değişimi
-   * - discoverSuccess: Cihaz keşfedildi
-   * - discoverFail: Keşif başarısız
+   * Register device event listeners
+   * - deviceStateChange: Device state change
+   * - discoverSuccess: Device discovered
+   * - discoverFail: Discovery failed
    */
   private registerDeviceEvents(): void {
     if (!this.dmInstance) return
 
     try {
-      // Cihaz durumu değişim olayı
+      // Device state change event
       this.dmInstance.on('deviceStateChange',
         (data: deviceManager.DeviceStateChangeAction) => {
-          console.info(`[DataSyncService] Cihaz durumu değişti: ${JSON.stringify(data)}`)
+          console.info(`[DataSyncService] Device state changed: ${JSON.stringify(data)}`)
 
           if (data.action === deviceManager.DeviceStateChangeAction.READY) {
-            // Cihaz hazır - senkronizasyon başlat
+            // Device ready - start synchronization
             this.onDeviceReady(data.device)
           } else if (data.action === deviceManager.DeviceStateChangeAction.OFFLINE) {
-            // Cihaz çevrimdışı
+            // Device offline
             this.onDeviceOffline(data.device.deviceId)
           }
         }
       )
 
-      // Cihaz keşif başarısı
+      // Device discovery success
       this.dmInstance.on('discoverSuccess',
         (data: deviceManager.DiscoverDeviceInfo) => {
-          console.info(`[DataSyncService] Cihaz keşfedildi: ${data.device.deviceName}`)
+          console.info(`[DataSyncService] Device discovered: ${data.device.deviceName}`)
           this.onDeviceDiscovered(data.device)
         }
       )
 
-      // Keşif başarısızlığı
+      // Discovery failure
       this.dmInstance.on('discoverFail',
         (data: { subscribeId: number, reason: number }) => {
-          console.warn(`[DataSyncService] Keşif başarısız: ${data.reason}`)
+          console.warn(`[DataSyncService] Discovery failed: ${data.reason}`)
           this.setSyncStatus(SyncStatus.FAILED)
         }
       )
 
     } catch (error) {
-      console.error(`[DataSyncService] Event listener kaydı hatası: ${JSON.stringify(error)}`)
+      console.error(`[DataSyncService] Event listener registration error: ${JSON.stringify(error)}`)
     }
   }
 
   /**
-   * Mock mod başlat - gerçek API yokken simülasyon
+   * Initialize mock mode - simulation when real API is unavailable
    */
   private initMockMode(): void {
-    console.info('[DataSyncService] Mock senkronizasyon modu aktif')
+    console.info('[DataSyncService] Mock synchronization mode active')
 
-    // Sahte eşleştirilmiş telefon ekle
+    // Add a fake paired phone
     this.pairedDevices = [
       {
         deviceId: 'MOCK_PHONE_001',
-        deviceName: 'Hasan\'ın Telefonu',
+        deviceName: "User's Phone",
         deviceType: 'phone',
         networkId: 'mock-network-id',
-        isOnline: Math.random() > 0.3,  // %70 ihtimalle online
+        isOnline: Math.random() > 0.3,  // 70% chance online
         lastSeenAt: Date.now() - Math.floor(Math.random() * 3600000)
       }
     ]
   }
 
-  // ────────────────────────────────────────────────────────────────
-  // CİHAZ KEŞİF VE BAĞLANTI
-  // ────────────────────────────────────────────────────────────────
+  // ──────────────────────────────────────────────────────────────
+  // DEVICE DISCOVERY AND CONNECTION
+  // ──────────────────────────────────────────────────────────────
 
   /**
-   * Yakındaki HarmonyOS cihazlarını tara
+   * Scan for nearby HarmonyOS devices
    */
   startDiscovery(): void {
     if (!this.dmInstance) {
-      console.warn('[DataSyncService] DeviceManager mevcut değil')
+      console.warn('[DataSyncService] DeviceManager not available')
       return
     }
 
@@ -245,23 +245,23 @@ export class DataSyncService {
       subscribeId: Math.floor(Math.random() * 65536),
       mode: deviceManager.DiscoverMode.DISCOVER_MODE_ACTIVE,
       medium: deviceManager.ExchangeMedium.BLE,         // Bluetooth Low Energy
-      freq: deviceManager.ExchangeFreq.LOW,             // Düşük frekans (batarya tasarrufu)
-      isSameAccount: true,                              // Aynı HarmonyOS hesabı
+      freq: deviceManager.ExchangeFreq.LOW,             // Low frequency (battery saving)
+      isSameAccount: true,                              // Same HarmonyOS account
       isWakeRemote: false,
       capability: deviceManager.SubscribeCap.SUBSCRIBE_CAPABILITY_DDMP
     }
 
     try {
       this.dmInstance.startDeviceDiscovery(subscribeInfo)
-      console.info('[DataSyncService] Cihaz keşfi başlatıldı')
+      console.info('[DataSyncService] Device discovery started')
     } catch (error) {
-      console.error(`[DataSyncService] Keşif başlatılamadı: ${JSON.stringify(error)}`)
+      console.error(`[DataSyncService] Discovery start failed: ${JSON.stringify(error)}`)
       this.setSyncStatus(SyncStatus.FAILED)
     }
   }
 
   /**
-   * Cihaz keşfini durdur
+   * Stop device discovery
    */
   stopDiscovery(): void {
     if (!this.dmInstance) return
@@ -270,11 +270,11 @@ export class DataSyncService {
       if (this.syncStatus === SyncStatus.DISCOVERING) {
         this.setSyncStatus(SyncStatus.IDLE)
       }
-    } catch (e) { /* sessizce geç */ }
+    } catch (e) { /* silently ignore */ }
   }
 
   /**
-   * Güvenilir (eşleştirilmiş) cihazları yükle
+   * Load trusted (paired) devices
    */
   private loadTrustedDevices(): void {
     if (!this.dmInstance) return
@@ -290,41 +290,41 @@ export class DataSyncService {
         lastSeenAt: Date.now()
       }))
 
-      console.info(`[DataSyncService] ${this.pairedDevices.length} güvenilir cihaz yüklendi`)
+      console.info(`[DataSyncService] ${this.pairedDevices.length} trusted device(s) loaded`)
     } catch (error) {
-      console.warn(`[DataSyncService] Güvenilir cihazlar yüklenemedi: ${JSON.stringify(error)}`)
+      console.warn(`[DataSyncService] Failed to load trusted devices: ${JSON.stringify(error)}`)
     }
   }
 
-  // ────────────────────────────────────────────────────────────────
-  // VERİ SENKRONİZASYONU
-  // ────────────────────────────────────────────────────────────────
+  // ──────────────────────────────────────────────────────────────
+  // DATA SYNCHRONIZATION
+  // ──────────────────────────────────────────────────────────────
 
   /**
-   * Sağlık verilerini telefona senkronize et
+   * Synchronize health data to phone
    *
-   * @param data - Gönderilecek sağlık veri paketi
-   * @returns Senkronizasyon sonucu
+   * @param data - Health data packet to send
+   * @returns Synchronization result
    */
   async syncHealthData(data: HealthDataPacket): Promise<SyncResult> {
     const onlineDevice = this.pairedDevices.find(d => d.isOnline)
 
     if (!onlineDevice) {
-      // Çevrimdışı: Lokal önbelleğe kaydet
+      // Offline: save to local cache
       this.cacheDataLocally(data)
       return {
         success: false,
         deviceId: 'none',
         syncedAt: Date.now(),
         recordsCount: 0,
-        errorMessage: 'Bağlı telefon bulunamadı, veri önbelleğe alındı'
+        errorMessage: 'No connected phone found, data cached locally'
       }
     }
 
     this.setSyncStatus(SyncStatus.SYNCING)
 
     try {
-      // Gerçek API çağrısı - distributedData kullanarak
+      // Real API call - using distributedData
       const result = await this.sendDataToDevice(onlineDevice, data)
       this.setSyncStatus(SyncStatus.COMPLETED)
 
@@ -336,15 +336,15 @@ export class DataSyncService {
       }
 
       this.syncHistory.push(syncResult)
-      // Son 30 senkronizasyonu tut
+      // Keep last 30 sync results
       if (this.syncHistory.length > 30) {
         this.syncHistory = this.syncHistory.slice(-30)
       }
 
-      // Başarılı senkronda önbelleği temizle
+      // Clear cache on successful sync
       this.localCache = []
 
-      console.info(`[DataSyncService] Senkronizasyon tamamlandı: ${syncResult.recordsCount} kayıt`)
+      console.info(`[DataSyncService] Sync completed: ${syncResult.recordsCount} records`)
       return syncResult
 
     } catch (error) {
@@ -363,51 +363,51 @@ export class DataSyncService {
   }
 
   /**
-   * Verilen cihaza sağlık verisini gönder
-   * Gerçekte @ohos.distributedKVStore veya RPC kullanılır.
+   * Send health data to specified device.
+   * In real implementation, uses @ohos.distributedKVStore or RPC.
    */
   private async sendDataToDevice(
     device: PairedDevice,
     data: HealthDataPacket
   ): Promise<boolean> {
 
-    // Gerçek implementasyonda:
-    // 1. distributedKVStore ile paylaşımlı KV store aç
-    // 2. Veriyi serialize et ve store'a yaz
-    // 3. Telefon bu değişikliği otomatik alır
+    // Real implementation would:
+    // 1. Open shared KV store via distributedKVStore
+    // 2. Serialize data and write to store
+    // 3. Phone automatically receives the change
 
     return new Promise((resolve, reject) => {
-      // Mock: %90 başarı oranı simülasyonu
+      // Mock: 90% success rate simulation
       setTimeout(() => {
         if (Math.random() > 0.1) {
-          console.info(`[DataSyncService] Veri ${device.deviceName}'a gönderildi`)
+          console.info(`[DataSyncService] Data sent to ${device.deviceName}`)
           resolve(true)
         } else {
-          reject(new Error('Ağ zaman aşımı'))
+          reject(new Error('Network timeout'))
         }
       }, 500 + Math.random() * 1000)
     })
   }
 
   /**
-   * Çevrimdışıyken verileri lokal önbellekte sakla
+   * Store data locally when offline
    */
   private cacheDataLocally(data: HealthDataPacket): void {
     this.localCache.push(data)
-    // Maksimum 7 günlük veri önbelleği (batarya tasarrufu)
+    // Maximum 7 days of cached data (battery saving)
     if (this.localCache.length > 7) {
       this.localCache = this.localCache.slice(-7)
     }
-    console.info(`[DataSyncService] Veri önbelleğe alındı. Bekleyen: ${this.localCache.length}`)
+    console.info(`[DataSyncService] Data cached. Pending: ${this.localCache.length}`)
   }
 
   /**
-   * Cihaz çevrimiçi olduğunda bekleyen önbelleği gönder
+   * Flush pending cache when device comes online
    */
   async flushPendingCache(): Promise<void> {
     if (this.localCache.length === 0) return
 
-    console.info(`[DataSyncService] ${this.localCache.length} önbellek paketi gönderiliyor`)
+    console.info(`[DataSyncService] Sending ${this.localCache.length} cached packet(s)`)
 
     for (const packet of [...this.localCache]) {
       const result = await this.syncHealthData(packet)
@@ -417,16 +417,16 @@ export class DataSyncService {
     }
   }
 
-  // ────────────────────────────────────────────────────────────────
-  // OTOMATİK SENKRONİZASYON
-  // ────────────────────────────────────────────────────────────────
+  // ──────────────────────────────────────────────────────────────
+  // AUTOMATIC SYNCHRONIZATION
+  // ──────────────────────────────────────────────────────────────
 
   /**
-   * Otomatik senkronizasyon zamanlayıcısı başlat
-   * Varsayılan: Her 30 dakikada bir
+   * Start automatic sync timer
+   * Default: every 30 minutes
    *
-   * @param intervalMs - Senkronizasyon aralığı (ms)
-   * @param dataProvider - Her senkronda çağrılacak veri sağlayıcı
+   * @param intervalMs - Sync interval (ms)
+   * @param dataProvider - Data provider called on each sync
    */
   startAutoSync(intervalMs: number = 1800000,
                 dataProvider: () => HealthDataPacket): void {
@@ -438,14 +438,14 @@ export class DataSyncService {
     this.autoSyncTimer = setInterval(async () => {
       const data = dataProvider()
       const result = await this.syncHealthData(data)
-      console.info(`[DataSyncService] Otomatik senkron: ${result.success ? 'başarılı' : 'başarısız'}`)
+      console.info(`[DataSyncService] Auto sync: ${result.success ? 'success' : 'failed'}`)
     }, intervalMs)
 
-    console.info(`[DataSyncService] Otomatik senkron başlatıldı (${intervalMs / 60000} dk)`)
+    console.info(`[DataSyncService] Auto sync started (every ${intervalMs / 60000} min)`)
   }
 
   /**
-   * Otomatik senkronizasyonu durdur
+   * Stop automatic synchronization
    */
   stopAutoSync(): void {
     if (this.autoSyncTimer !== -1) {
@@ -454,9 +454,9 @@ export class DataSyncService {
     }
   }
 
-  // ────────────────────────────────────────────────────────────────
+  // ──────────────────────────────────────────────────────────────
   // EVENT HANDLERS
-  // ────────────────────────────────────────────────────────────────
+  // ──────────────────────────────────────────────────────────────
 
   private onDeviceReady(device: deviceManager.DeviceInfo): void {
     const existing = this.pairedDevices.find(d => d.deviceId === device.deviceId)
@@ -473,7 +473,7 @@ export class DataSyncService {
         lastSeenAt: Date.now()
       })
     }
-    // Cihaz geldiğinde bekleyen önbelleği flush et
+    // Flush pending cache when device comes online
     this.flushPendingCache()
   }
 
@@ -498,61 +498,61 @@ export class DataSyncService {
     }
   }
 
-  // ────────────────────────────────────────────────────────────────
-  // YARDIMCI METODLAR
-  // ────────────────────────────────────────────────────────────────
+  // ──────────────────────────────────────────────────────────────
+  // UTILITY METHODS
+  // ──────────────────────────────────────────────────────────────
 
   private setSyncStatus(status: SyncStatus): void {
     this.syncStatus = status
     this.statusListeners.forEach(cb => {
-      try { cb(status) } catch (e) { /* listener hatası */ }
+      try { cb(status) } catch (e) { /* listener error */ }
     })
   }
 
   /**
-   * Senkronizasyon durumu dinleyicisi ekle
+   * Add sync status listener
    */
   addStatusListener(listener: (status: SyncStatus) => void): void {
     this.statusListeners.push(listener)
   }
 
   /**
-   * Senkronizasyon durumu dinleyicisini kaldır
+   * Remove sync status listener
    */
   removeStatusListener(listener: (status: SyncStatus) => void): void {
     this.statusListeners = this.statusListeners.filter(l => l !== listener)
   }
 
   /**
-   * Mevcut senkronizasyon durumunu döndür
+   * Returns current sync status
    */
   getStatus(): SyncStatus {
     return this.syncStatus
   }
 
   /**
-   * Eşleştirilmiş cihaz listesini döndür
+   * Returns list of paired devices
    */
   getPairedDevices(): PairedDevice[] {
     return [...this.pairedDevices]
   }
 
   /**
-   * Senkronizasyon geçmişini döndür
+   * Returns sync history
    */
   getSyncHistory(): SyncResult[] {
     return [...this.syncHistory]
   }
 
   /**
-   * Bekleyen önbellek sayısını döndür
+   * Returns pending cache count
    */
   getPendingCacheCount(): number {
     return this.localCache.length
   }
 
   /**
-   * Boş bir sağlık veri paketi oluştur
+   * Create an empty health data packet
    */
   createEmptyPacket(deviceId: string): HealthDataPacket {
     return {
@@ -569,7 +569,7 @@ export class DataSyncService {
   }
 
   /**
-   * Servisi temizle (uygulama kapanırken)
+   * Clean up service (when app closes)
    */
   destroy(): void {
     this.stopAutoSync()
@@ -581,10 +581,10 @@ export class DataSyncService {
         this.dmInstance.off('discoverSuccess')
         this.dmInstance.off('discoverFail')
         this.dmInstance.release()
-      } catch (e) { /* sessizce */ }
+      } catch (e) { /* silently ignore */ }
       this.dmInstance = null
     }
 
-    console.info('[DataSyncService] Servis temizlendi')
+    console.info('[DataSyncService] Service destroyed')
   }
 }

@@ -1,33 +1,33 @@
 # HarmonyOS Developer Advocate — Wearable Ecosystem Kit
 
-> HarmonyOS wearable ekosistemi için geliştirici savunuculuğu içerik paketi.
+> A developer advocacy content package for the HarmonyOS wearable ecosystem.
 
 ---
 
-## İçerik / Contents
+## Contents
 
-### 📱 Demo Uygulama
+### 📱 Demo Application
 ```
-harmonyos-wearable-demo/    ← ArkTS ile yazılmış wearable health tracker
+harmonyos-wearable-demo/    ← Wearable health tracker written in ArkTS
 ```
-Sağlık takip demo uygulaması: kalp atışı, adım sayar, uyku analizi ve telefon senkronizasyonu.
+Health tracking demo app: heart rate monitor, step counter, sleep analysis, and phone synchronization.
 
-### 📚 Knowledge Dökümanları
+### 📚 Knowledge Documentation
 ```
 docs/
-├── getting-started.md      ← HarmonyOS wearable geliştirmeye başlangıç rehberi
-├── api-cheatsheet.md       ← Sensor, Health, Distributed API referansı
-└── demo-app-guide.md       ← Demo uygulaması detaylı açıklama rehberi
+├── getting-started.md      ← Getting started guide for HarmonyOS wearable development
+├── api-cheatsheet.md       ← Sensor, Health, and Distributed API reference
+└── demo-app-guide.md       ← Detailed explanation guide for the demo application
 ```
 
 ---
 
-## Hızlı Başlangıç / Quick Start
+## Quick Start
 
-1. [Getting Started Guide](docs/getting-started.md) ile ortamı kur
-2. [Demo App README](harmonyos-wearable-demo/README.md) ile projeyi aç ve çalıştır
-3. [API Cheatsheet](docs/api-cheatsheet.md)'i geliştirme sırasında başvuru olarak kullan
+1. Set up your environment with the [Getting Started Guide](docs/getting-started.md)
+2. Open and run the project with the [Demo App README](harmonyos-wearable-demo/README.md)
+3. Use the [API Cheatsheet](docs/api-cheatsheet.md) as a reference during development
 
 ---
 
-Hazırlayan: **HarmonyOS Developer Advocate Ekibi** | Mart 2026
+Prepared by: **HarmonyOS Developer Advocate Team** | March 2026

@@ -1,42 +1,42 @@
-# HarmonyOS Wearable Health Demo — Uygulama Rehberi
+# HarmonyOS Wearable Health Demo — Application Guide
 
-> Demo uygulamasını anlamak, sunmak ve geliştirmek için kapsamlı rehber.
-
----
-
-## 1. Uygulamaya Genel Bakış
-
-`harmonyos-wearable-demo`, HarmonyOS wearable geliştirme ortamını tanıtmak amacıyla hazırlanmış referans kalitesinde bir demo projesidir. Gerçek bir ürün uygulamasında bulunması beklenen tüm temel unsurları içerir:
-
-- **Çok sayfalı navigasyon** (Tabs / Alt Menü)
-- **Sensör API entegrasyonu** (gerçek cihaz + mock fallback)
-- **Cihazlar arası senkronizasyon** (distributed data)
-- **Yeniden kullanılabilir UI komponentleri**
-- **Lifecycle ve izin yönetimi**
+> A comprehensive guide for understanding, presenting, and developing the demo application.
 
 ---
 
-## 2. Sayfa Açıklamaları
+## 1. Application Overview
 
-### 2.1 Index (Ana Dashboard)
+`harmonyos-wearable-demo` is a reference-quality demo project designed to introduce the HarmonyOS wearable development environment. It includes all the core elements expected in a real product implementation:
 
-**Dosya:** `src/main/ets/pages/Index.ets`
+- **Multi-page navigation** (Tabs / Bottom Menu)
+- **Sensor API integration** (real device + mock fallback)
+- **Cross-device synchronization** (distributed data)
+- **Reusable UI components**
+- **Lifecycle and permission management**
 
-Ana dashboard, uygulamanın giriş noktasıdır. Şu unsurları içerir:
+---
 
-| Bileşen | Açıklama |
-|---------|----------|
-| Canlı saat | `setInterval` ile her saniye güncellenen saat gösterimi |
-| Adım progress halkası | `RingProgress` komponenti ile günlük hedefi dairesel gösterir |
-| HealthCard Grid | Kalp atışı, adım, kalori, uyku skoru, mesafe kartları |
-| Alt navigasyon | 4 sekme: Ana Sayfa, Kalp, Adım, Uyku |
+## 2. Page Descriptions
 
-**Öğretici Noktalar:**
+### 2.1 Index (Main Dashboard)
+
+**File:** `src/main/ets/pages/Index.ets`
+
+The main dashboard is the entry point of the application. It includes the following elements:
+
+| Component | Description |
+|-----------|-------------|
+| Live clock | Clock display updated every second via `setInterval` |
+| Step progress ring | Circular daily goal display using the `RingProgress` component |
+| HealthCard Grid | Heart rate, steps, calories, sleep score, distance cards |
+| Bottom navigation | 4 tabs: Home, Heart, Steps, Sleep |
+
+**Teaching Points:**
 ```typescript
-// @State ile reaktif değişken
+// Reactive variable with @State
 @State currentHeartRate: number = 0
 
-// Mock veri güncelleme (gerçek sensör simülasyonu)
+// Mock data update (real sensor simulation)
 private startMockDataUpdate(): void {
   setInterval(() => {
     this.currentHeartRate = Math.floor(60 + Math.random() * 40)
@@ -46,27 +46,27 @@ private startMockDataUpdate(): void {
 
 ---
 
-### 2.2 HeartRate (Kalp Atışı Monitörü)
+### 2.2 HeartRate (Heart Rate Monitor)
 
-**Dosya:** `src/main/ets/pages/HeartRate.ets`
+**File:** `src/main/ets/pages/HeartRate.ets`
 
-| Özellik | Teknik Detay |
-|---------|-------------|
-| Gerçek zamanlı BPM | `sensor.on(SensorId.HEART_RATE)` callback'i |
-| Nabız animasyonu | `@State` + CSS `scale` animasyonu |
-| İstatistik kartları | Min / Maks / Ortalama hesaplaması |
-| BPM zonu tablosu | Bradikardi < 60, Normal 60-100, Yüksek 100-120, Taşikardi > 120 |
-| Uyarı banner | 120 BPM üzeri veya 50 BPM altında görünür |
+| Feature | Technical Detail |
+|---------|-----------------|
+| Real-time BPM | `sensor.on(SensorId.HEART_RATE)` callback |
+| Pulse animation | `@State` + CSS `scale` animation |
+| Statistics cards | Min / Max / Average calculation |
+| BPM zone table | Bradycardia < 60, Normal 60-100, High 100-120, Tachycardia > 120 |
+| Alert banner | Visible above 120 BPM or below 50 BPM |
 
-**Öğretici Noktalar:**
+**Teaching Points:**
 ```typescript
-// Sensör kaydı
+// Sensor registration
 sensor.on(sensor.SensorId.HEART_RATE, (data: sensor.HeartRateResponse) => {
   this.currentBPM = data.heartRate
   this.updateStats(data.heartRate)
-}, { interval: 1000000000 }) // nanosaniye cinsinden
+}, { interval: 1000000000 }) // in nanoseconds
 
-// Temizlik (memory leak önleme)
+// Cleanup (preventing memory leak)
 aboutToDisappear() {
   sensor.off(sensor.SensorId.HEART_RATE)
 }
@@ -74,45 +74,45 @@ aboutToDisappear() {
 
 ---
 
-### 2.3 StepCounter (Adım Sayar)
+### 2.3 StepCounter (Step Counter)
 
-**Dosya:** `src/main/ets/pages/StepCounter.ets`
+**File:** `src/main/ets/pages/StepCounter.ets`
 
-| Özellik | Teknik Detay |
-|---------|-------------|
-| Dairesel progress | `RingProgress` component, renk ilerlemeye göre değişir |
-| Animasyonlu sayaç | 0'dan değere smooth animasyon |
-| Kalori hesabı | `steps * 0.04` yaklaşık formül |
-| Mesafe hesabı | `steps * 0.762` metre (ortalama adım boyu) |
-| Saatlik dağılım | Canvas ile çubuk grafik |
-| Hedef seçici | 5K / 7.5K / 10K / 15K |
+| Feature | Technical Detail |
+|---------|-----------------|
+| Circular progress | `RingProgress` component, color changes with progress |
+| Animated counter | Smooth animation from 0 to value |
+| Calorie calculation | `steps * 0.04` approximate formula |
+| Distance calculation | `steps * 0.762` meters (average stride length) |
+| Hourly distribution | Bar chart with Canvas |
+| Goal selector | 5K / 7.5K / 10K / 15K |
 
-**Öğretici Noktalar:**
+**Teaching Points:**
 ```typescript
-// Pedometer sensör kullanımı
+// Pedometer sensor usage
 sensor.on(sensor.SensorId.PEDOMETER, (data: sensor.PedometerResponse) => {
   this.stepCount = data.steps
   this.updateDerivedMetrics()
-}, { interval: 'game' }) // 'game' = ~200ms güncelleme
+}, { interval: 'game' }) // 'game' = ~200ms update
 ```
 
 ---
 
-### 2.4 SleepTracker (Uyku Analizi)
+### 2.4 SleepTracker (Sleep Analysis)
 
-**Dosya:** `src/main/ets/pages/SleepTracker.ets`
+**File:** `src/main/ets/pages/SleepTracker.ets`
 
-3 sekmeli yapı:
+3-tab structure:
 
-| Sekme | İçerik |
-|-------|--------|
-| **Analiz** | Dairesel uyku skoru, evre dağılım progress barları |
-| **Geçmiş** | 7 günlük çubuk grafik + günlük liste |
-| **Öneriler** | 6 adet kişiselleştirilmiş öneri kartı |
+| Tab | Content |
+|-----|---------|
+| **Analysis** | Circular sleep score, stage distribution progress bars |
+| **History** | 7-day bar chart + daily list |
+| **Recommendations** | 6 personalized recommendation cards |
 
-**Öğretici Noktalar:**
+**Teaching Points:**
 ```typescript
-// Uyku verisi Health Kit'ten okuma
+// Reading sleep data from Health Kit
 health.getHealthData({
   dataType: health.HealthDataType.SLEEP,
   startTime: yesterdayMidnight,
@@ -124,16 +124,16 @@ health.getHealthData({
 
 ---
 
-## 3. Komponent Açıklamaları
+## 3. Component Descriptions
 
 ### 3.1 HealthCard
 
-**Dosya:** `src/main/ets/components/HealthCard.ets`
+**File:** `src/main/ets/components/HealthCard.ets`
 
 ```typescript
-// Kullanım örneği
+// Usage example
 HealthCard({
-  title: '❤️ Kalp Atışı',
+  title: '❤️ Heart Rate',
   value: '72',
   unit: 'BPM',
   iconName: 'heart',
@@ -143,27 +143,27 @@ HealthCard({
 })
 ```
 
-**Props Tablosu:**
+**Props Table:**
 
-| Prop | Tip | Açıklama |
-|------|-----|----------|
-| `title` | `string` | Kart başlığı |
-| `value` | `string` | Gösterilecek değer |
-| `unit` | `string` | Birim (BPM, adım, kcal...) |
-| `trend` | `'up' \| 'down' \| 'stable'` | Trend ikonu yönü |
-| `accentColor` | `string` | Sol bordür rengi |
-| `onClick` | `() => void` | Tıklama callback'i |
+| Prop | Type | Description |
+|------|------|-------------|
+| `title` | `string` | Card title |
+| `value` | `string` | Value to display |
+| `unit` | `string` | Unit (BPM, steps, kcal...) |
+| `trend` | `'up' \| 'down' \| 'stable'` | Trend icon direction |
+| `accentColor` | `string` | Left border color |
+| `onClick` | `() => void` | Click callback |
 
 ---
 
 ### 3.2 RingProgress
 
-**Dosya:** `src/main/ets/components/RingProgress.ets`
+**File:** `src/main/ets/components/RingProgress.ets`
 
-Canvas 2D API ile manuel çizilmiş dairesel progress göstergesi.
+Circular progress indicator drawn manually with the Canvas 2D API.
 
 ```typescript
-// Kullanım örneği
+// Usage example
 RingProgress({
   progress: 0.68,        // 0.0 - 1.0
   size: 120,             // px
@@ -171,49 +171,49 @@ RingProgress({
   color: '#2ED573',
   bgColor: '#2A2A2A'
 }) {
-  // Merkeze özel içerik (@BuilderParam)
-  Text('6.800')
-  Text('adım')
+  // Custom content in center (@BuilderParam)
+  Text('6,800')
+  Text('steps')
 }
 ```
 
-**Teknik Detay:**
-- `Canvas` + `CanvasRenderingContext2D` ile çizim
-- `arc()` metodu ile yay çizimi
-- 0'dan hedefe 600ms `animateTo` ile smooth başlangıç
-- `%100`'de altın rengi glow efekti
+**Technical Details:**
+- Drawing with `Canvas` + `CanvasRenderingContext2D`
+- Arc drawing with `arc()` method
+- Smooth start from 0 to target with 600ms `animateTo`
+- Gold glow effect at 100%
 
 ---
 
-## 4. Servis Açıklamaları
+## 4. Service Descriptions
 
 ### 4.1 HealthSensorService
 
-**Dosya:** `src/main/ets/services/HealthSensorService.ets`
+**File:** `src/main/ets/services/HealthSensorService.ets`
 
-Singleton pattern ile tüm sensör aboneliklerini yönetir.
+Manages all sensor subscriptions using the singleton pattern.
 
 ```typescript
-// Kullanım
+// Usage
 const sensorService = HealthSensorService.getInstance()
 
-// Adım sayar başlat
+// Start step counter
 sensorService.startPedometerListening((steps: number) => {
   this.stepCount = steps
 })
 
-// Kalp atışı başlat
+// Start heart rate
 sensorService.startHeartRateListening((bpm: number) => {
   this.heartRate = bpm
 })
 
-// Uygulama kapanışında temizlik
+// Cleanup on app close
 sensorService.stopAllSensors()
 ```
 
-**Mock Mod:**
+**Mock Mode:**
 ```typescript
-// Gerçek sensör yoksa otomatik mock geçiş
+// Automatic mock fallback when no real sensor is available
 private initializeSensor(sensorId: SensorId): void {
   try {
     sensor.getSensorList((err, list) => {
@@ -232,16 +232,16 @@ private initializeSensor(sensorId: SensorId): void {
 
 ### 4.2 DataSyncService
 
-**Dosya:** `src/main/ets/services/DataSyncService.ets`
+**File:** `src/main/ets/services/DataSyncService.ets`
 
-Akıllı saat ile telefon arasında sağlık verisini senkronize eder.
+Synchronizes health data between the smartwatch and phone.
 
 ```typescript
-// Cihaz keşfi başlat
+// Start device discovery
 const syncService = DataSyncService.getInstance()
 await syncService.startDeviceDiscovery()
 
-// Anlık senkronizasyon
+// Instant synchronization
 await syncService.syncHealthData({
   timestamp: Date.now(),
   heartRate: 72,
@@ -250,38 +250,38 @@ await syncService.syncHealthData({
   sleepScore: 85
 })
 
-// Otomatik senkronizasyon (30 dk aralıklı)
+// Automatic synchronization (30-minute intervals)
 syncService.startAutoSync()
 ```
 
 ---
 
-## 5. Konfigürasyon
+## 5. Configuration
 
-### module.json5 Özeti
+### module.json5 Summary
 
 ```json5
 {
   "module": {
-    "deviceTypes": ["wearable"],  // Sadece wearable hedef
+    "deviceTypes": ["wearable"],  // Wearable target only
     "abilities": [{
       "name": "EntryAbility",
-      "orientation": "auto",       // Kare/yuvarlak ekran desteği
+      "orientation": "auto",       // Square/round screen support
       "backgroundModes": ["healthSport", "dataTransfer"]
     }],
-    "requestPermissions": [/* 6 izin */]
+    "requestPermissions": [/* 6 permissions */]
   }
 }
 ```
 
-### build-profile.json5 Özeti
+### build-profile.json5 Summary
 
 ```json5
 {
   "app": { "compileSdkVersion": 11 },
   "targets": [
-    { "name": "default" },         // Debug: obfuscation kapalı
-    { "name": "release",           // Release: obfuscation açık
+    { "name": "default" },         // Debug: obfuscation off
+    { "name": "release",           // Release: obfuscation on
       "runtimeOS": "HarmonyOS" }
   ]
 }
@@ -289,46 +289,46 @@ syncService.startAutoSync()
 
 ---
 
-## 6. Demo Sunum Senaryosu
+## 6. Demo Presentation Scenario
 
-Bu uygulamayı bir developer meetup veya workshop'ta sunarken önerilen senaryo:
+Recommended scenario when presenting this application at a developer meetup or workshop:
 
-### Adım 1 — Büyük Resim (2 dk)
-> "HarmonyOS wearable ekosistemi 3 temel yapı taşı üzerine kuruludur: ArkUI, ArkTS ve Distributed Stack. Bu demo, üçünü birlikte nasıl kullanacağınızı gösteriyor."
+### Step 1 — The Big Picture (2 min)
+> "The HarmonyOS wearable ecosystem is built on three core pillars: ArkUI, ArkTS, and the Distributed Stack. This demo shows you how to use all three together."
 
-### Adım 2 — Ana Dashboard (3 dk)
-- `Index.ets` dosyasını aç, `@State` ve reaktiviteyi göster
-- `HealthCard` componentini incele — prop-based composition
+### Step 2 — Main Dashboard (3 min)
+- Open `Index.ets`, demonstrate `@State` and reactivity
+- Examine the `HealthCard` component — prop-based composition
 
-### Adım 3 — Sensör Entegrasyonu (5 dk)
-- `HealthSensorService.ets` üzerinden `sensor.on()` API'yi göster
-- Mock vs gerçek sensör geçişini açıkla
+### Step 3 — Sensor Integration (5 min)
+- Show the `sensor.on()` API through `HealthSensorService.ets`
+- Explain the mock vs. real sensor fallback
 
-### Adım 4 — Cihaz Senkronizasyonu (3 dk)
-- `DataSyncService.ets` üzerinden distributed data kavramını anlat
-- HarmonyOS'un ne/nasıl farklılaştığını vurgula
+### Step 4 — Device Synchronization (3 min)
+- Explain the distributed data concept through `DataSyncService.ets`
+- Highlight what makes HarmonyOS different and how
 
-### Adım 5 — Canlı Demo (5 dk)
-- Emülatörde uygulamayı çalıştır
-- Adım ve kalp atışı simülasyonunu göster
-
----
-
-## 7. Sık Sorulan Sorular
-
-**S: Gerçek sensör verisi almak için ne yapmam gerekiyor?**
-C: `HealthSensorService` içindeki `useMockData` flag'ini `false` yapın ve gerçek cihazda çalıştırın.
-
-**S: iOS/Android'e port edebilir miyim?**
-C: ArkTS ve ArkUI HarmonyOS'a özgüdür. Ancak mantık katmanı TypeScript'e yakın olduğu için cross-platform araçlara taşınabilir.
-
-**S: Uyku verisini gerçekten nasıl alıyorsunuz?**
-C: Gerçek implementasyonda `@ohos.health.HealthDataType.SLEEP` kullanılır. Demo'da simüle data yeterlidir.
-
-**S: API Level 11'den eski cihazları destekliyor mu?**
-C: `build-profile.json5`'te `compatibleSdkVersion: 10` ile API 10 cihazlarda da çalışır, ancak bazı özellikler kısıtlı olabilir.
+### Step 5 — Live Demo (5 min)
+- Run the application in the emulator
+- Show the step and heart rate simulation
 
 ---
 
-Hazırlayan: **HarmonyOS Developer Advocate Ekibi**
-Versiyon: 1.0.0 | Tarih: Mart 2026
+## 7. Frequently Asked Questions
+
+**Q: What do I need to do to receive real sensor data?**
+A: Set the `useMockData` flag inside `HealthSensorService` to `false` and run on a real device.
+
+**Q: Can I port this to iOS/Android?**
+A: ArkTS and ArkUI are specific to HarmonyOS. However, since the logic layer is close to TypeScript, it can be migrated to cross-platform tools.
+
+**Q: How do you actually retrieve sleep data?**
+A: In a real implementation, `@ohos.health.HealthDataType.SLEEP` is used. Simulated data is sufficient for the demo.
+
+**Q: Does it support devices older than API Level 11?**
+A: With `compatibleSdkVersion: 10` in `build-profile.json5`, it works on API 10 devices as well, though some features may be limited.
+
+---
+
+Prepared by: **HarmonyOS Developer Advocate Team**
+Version: 1.0.0 | Date: March 2026

@@ -1,40 +1,27 @@
-# Getting Started: HarmonyOS Wearable Uygulama Geliştirme
 # Getting Started: HarmonyOS Wearable Application Development
 
-> **TR:** Bu rehber, HarmonyOS ekosisteminde giyilebilir (wearable) uygulama geliştirmeye başlamak isteyen geliştiriciler için kapsamlı bir başlangıç noktası sunar.
->
-> **EN:** This guide provides a comprehensive starting point for developers who want to build wearable applications within the HarmonyOS ecosystem.
+> This guide provides a comprehensive starting point for developers who want to build wearable applications within the HarmonyOS ecosystem.
 
 ---
 
-## İçindekiler / Table of Contents
+## Table of Contents
 
-1. [Giriş / Introduction](#1-giriş--introduction)
-2. [Gereksinimler / Requirements](#2-gereksinimler--requirements)
-3. [Proje Oluşturma / Project Setup](#3-proje-oluşturma--project-setup)
-4. [İlk ArkTS Bileşeni / First ArkTS Component](#4-i̇lk-arkts-bileşeni--first-arkts-component)
-5. [Sensör API'leri / Sensor APIs](#5-sensör-apileri--sensor-apis)
+1. [Introduction](#1-introduction)
+2. [Requirements](#2-requirements)
+3. [Project Setup](#3-project-setup)
+4. [First ArkTS Component](#4-first-arkts-component)
+5. [Sensor APIs](#5-sensor-apis)
 6. [Wearable UI Best Practices](#6-wearable-ui-best-practices)
-7. [Test ve Deploy / Testing and Deployment](#7-test-ve-deploy--testing-and-deployment)
+7. [Testing and Deployment](#7-testing-and-deployment)
 
 ---
 
-## 1. Giriş / Introduction
+## 1. Introduction
 
-**TR:** HarmonyOS, Huawei tarafından geliştirilen dağıtık bir işletim sistemidir. Akıllı saatler, fitness bantları ve diğer giyilebilir cihazlar için güçlü bir uygulama platformu sunar. HarmonyOS wearable ekosistemi; ArkTS programlama dili, ArkUI framework'ü ve kapsamlı sensör/sağlık API'leri ile donatılmıştır. Bu ekosistem, geliştiricilere telefondan saate kadar kesintisiz dağıtık deneyimler oluşturma imkanı tanır.
+HarmonyOS is a distributed operating system developed by Huawei. It provides a powerful application platform for smartwatches, fitness bands, and other wearable devices. The HarmonyOS wearable ecosystem is equipped with the ArkTS programming language, the ArkUI framework, and comprehensive sensor/health APIs. This ecosystem enables developers to create seamless distributed experiences across devices — from phones to watches.
 
-**EN:** HarmonyOS is a distributed operating system developed by Huawei. It provides a powerful application platform for smartwatches, fitness bands, and other wearable devices. The HarmonyOS wearable ecosystem is equipped with the ArkTS programming language, the ArkUI framework, and comprehensive sensor/health APIs. This ecosystem enables developers to create seamless distributed experiences across devices — from phones to watches.
+### Why HarmonyOS Wearable?
 
-### Neden HarmonyOS Wearable? / Why HarmonyOS Wearable?
-
-**TR:**
-- **Dağıtık Mimari:** Telefon ve saat arasında veri/UI paylaşımı kolaylaşır.
-- **ArkTS:** TypeScript tabanlı, statik tip güvenliği ile modern geliştirme deneyimi.
-- **Zengin Sensör Desteği:** Kalp atışı, adım sayar, SpO2 ve daha fazlası.
-- **Health Kit:** Sağlık verilerine standart API ile erişim.
-- **Düşük Güç Tüketimi:** Wearable odaklı optimizasyon kabiliyetleri.
-
-**EN:**
 - **Distributed Architecture:** Simplified data/UI sharing between phone and watch.
 - **ArkTS:** TypeScript-based with static type safety for a modern development experience.
 - **Rich Sensor Support:** Heart rate, pedometer, SpO2, and more.
@@ -43,113 +30,89 @@
 
 ---
 
-## 2. Gereksinimler / Requirements
+## 2. Requirements
 
-**TR:** Geliştirme ortamınızı kurmadan önce aşağıdaki bileşenlerin hazır olduğundan emin olun.
+Ensure the following components are ready before setting up your development environment.
 
-**EN:** Ensure the following components are ready before setting up your development environment.
+### 2.1 DevEco Studio Installation
 
-### 2.1 DevEco Studio Kurulumu / DevEco Studio Installation
+DevEco Studio is Huawei's official IDE for developing HarmonyOS applications. Version 4.1 or higher is required.
 
-**TR:** DevEco Studio, HarmonyOS uygulamaları geliştirmek için Huawei'nin resmi IDE'sidir. Versiyon 4.1 veya üstü gereklidir.
+**Steps:**
 
-**EN:** DevEco Studio is Huawei's official IDE for developing HarmonyOS applications. Version 4.1 or higher is required.
+1. Download DevEco Studio 4.1+ from the [HarmonyOS Developer Portal](https://developer.harmonyos.com/en/develop/deveco-studio).
 
-**Adımlar / Steps:**
+2. During installation, select to also install the **HarmonyOS SDK**.
 
-1. [HarmonyOS Developer Portal](https://developer.harmonyos.com/en/develop/deveco-studio) adresinden DevEco Studio 4.1+ indirin.
-   Download DevEco Studio 4.1+ from the [HarmonyOS Developer Portal](https://developer.harmonyos.com/en/develop/deveco-studio).
+3. On first launch, install **API Level 11** or higher from the SDK Manager.
 
-2. Kurulum sırasında **HarmonyOS SDK**'yı da yüklemeyi seçin.
-   During installation, select to also install the **HarmonyOS SDK**.
+**System Requirements:**
 
-3. İlk açılışta SDK Manager'dan **API Level 11** veya üstünü yükleyin.
-   On first launch, install **API Level 11** or higher from the SDK Manager.
-
-**Sistem Gereksinimleri / System Requirements:**
-
-| Özellik / Property | Minimum | Önerilen / Recommended |
+| Property | Minimum | Recommended |
 |---|---|---|
-| İşletim Sistemi / OS | Windows 10 64-bit / macOS 12 | Windows 11 / macOS 13+ |
+| OS | Windows 10 64-bit / macOS 12 | Windows 11 / macOS 13+ |
 | RAM | 8 GB | 16 GB+ |
-| Disk | 10 GB boş alan / free | 30 GB+ SSD |
+| Disk | 10 GB free | 30 GB+ SSD |
 | JDK | JDK 17 | JDK 17 (bundled) |
 
 ### 2.2 HarmonyOS SDK (API Level 11+)
 
-**TR:** Wearable API'lerine erişmek için API Level 11 veya üstü gereklidir. Sensor, Health Kit ve distributed data gibi wearable'a özgü özellikler bu seviyeden itibaren desteklenmektedir.
+API Level 11 or higher is required to access wearable APIs. Wearable-specific features such as sensor, Health Kit, and distributed data are supported from this level onwards.
 
-**EN:** API Level 11 or higher is required to access wearable APIs. Wearable-specific features such as sensor, Health Kit, and distributed data are supported from this level onwards.
-
-SDK Manager'da şunların yüklü olduğunu doğrulayın / Verify the following are installed in SDK Manager:
+Verify the following are installed in SDK Manager:
 - `HarmonyOS SDK > API 11 > ArkTS SDK`
 - `HarmonyOS SDK > API 11 > Toolchains`
 - `HarmonyOS SDK > API 11 > Previewer`
 
-### 2.3 Wearable Emulator Kurulumu / Wearable Emulator Setup
+### 2.3 Wearable Emulator Setup
 
-**TR:** Gerçek bir cihaz olmadan test yapabilmek için HarmonyOS wearable emülatörünü kurmanız gerekir.
+To test without a physical device, you need to set up the HarmonyOS wearable emulator.
 
-**EN:** To test without a physical device, you need to set up the HarmonyOS wearable emulator.
+**Steps:**
 
-**Adımlar / Steps:**
+1. Open **Tools > Device Manager** in DevEco Studio.
 
-1. DevEco Studio'da **Tools > Device Manager** menüsünü açın.
-   Open **Tools > Device Manager** in DevEco Studio.
+2. Click **New Emulator** and select the **Wearable** category.
 
-2. **New Emulator** butonuna tıklayın ve **Wearable** kategorisini seçin.
-   Click **New Emulator** and select the **Wearable** category.
+3. Select a device profile (e.g., `HUAWEI Watch GT 4 Pro` or `Generic Wearable Round`).
 
-3. Bir cihaz profili seçin (örn. `HUAWEI Watch GT 4 Pro` veya `Generic Wearable Round`).
-   Select a device profile (e.g., `HUAWEI Watch GT 4 Pro` or `Generic Wearable Round`).
+4. Download the system image with API Level 11 and launch the emulator.
 
-4. API Level 11 ile system image'ı indirin ve emülatörü başlatın.
-   Download the system image with API Level 11 and launch the emulator.
+### 2.4 Basic ArkTS Knowledge
 
-### 2.4 ArkTS Temel Bilgisi / Basic ArkTS Knowledge
+ArkTS is HarmonyOS's primary application development language built on top of TypeScript. Familiarity with the following concepts is recommended:
 
-**TR:** ArkTS, TypeScript'in üzerine inşa edilmiş HarmonyOS'un birincil uygulama geliştirme dilidir. Aşağıdaki kavramlara aşina olmanız önerilir:
-
-**EN:** ArkTS is HarmonyOS's primary application development language built on top of TypeScript. Familiarity with the following concepts is recommended:
-
-- TypeScript temel sözdizimi / Basic TypeScript syntax
-- Dekoratörler (`@Entry`, `@Component`, `@State`) / Decorators
-- Async/await ve Promise kullanımı / Async/await and Promise usage
-- Modül sistemi (`import`/`export`) / Module system
+- Basic TypeScript syntax
+- Decorators (`@Entry`, `@Component`, `@State`)
+- Async/await and Promise usage
+- Module system (`import`/`export`)
 
 ---
 
-## 3. Proje Oluşturma / Project Setup
+## 3. Project Setup
 
-**TR:** Yeni bir HarmonyOS wearable projesi oluşturmak için aşağıdaki adımları izleyin.
+Follow the steps below to create a new HarmonyOS wearable project.
 
-**EN:** Follow the steps below to create a new HarmonyOS wearable project.
+### 3.1 New Project in DevEco Studio
 
-### 3.1 DevEco Studio'da Yeni Proje / New Project in DevEco Studio
+1. Open DevEco Studio and select **File > New > New Project**.
 
-1. DevEco Studio'yu açın ve **File > New > New Project** seçin.
-   Open DevEco Studio and select **File > New > New Project**.
+2. Select the **HarmonyOS** tab, then choose the **Empty Ability** template from the **Application** category.
 
-2. **HarmonyOS** sekmesini seçin, ardından **Application** kategorisinden **Empty Ability** template'ini seçin.
-   Select the **HarmonyOS** tab, then choose the **Empty Ability** template from the **Application** category.
-
-3. Proje ayarlarını girin / Enter project settings:
+3. Enter project settings:
    - **Project name:** `MyWearableApp`
    - **Bundle name:** `com.example.mywearableapp`
-   - **Save location:** Tercih ettiğiniz dizin / Your preferred directory
+   - **Save location:** Your preferred directory
    - **Compile SDK:** `API 11`
    - **Model:** `Stage`
 
-4. **Finish** butonuna tıklayın.
-   Click **Finish**.
+4. Click **Finish**.
 
-### 3.2 module.json5 Yapılandırması / module.json5 Configuration
+### 3.2 module.json5 Configuration
 
-**TR:** Projenin wearable cihaz için hedeflendiğini belirtmek üzere `module.json5` dosyasını düzenleyin.
+Edit the `module.json5` file to specify that the project targets wearable devices.
 
-**EN:** Edit the `module.json5` file to specify that the project targets wearable devices.
-
-Dosya yolu / File path: `entry/src/main/module.json5`
+File path: `entry/src/main/module.json5`
 
 ```json
 {
@@ -204,16 +167,14 @@ Dosya yolu / File path: `entry/src/main/module.json5`
 }
 ```
 
-### 3.3 Dizin Yapısı / Directory Structure
+### 3.3 Directory Structure
 
-**TR:** Oluşturulan projenin dizin yapısı aşağıdaki gibidir:
-
-**EN:** The directory structure of the created project is as follows:
+The directory structure of the created project is as follows:
 
 ```
 MyWearableApp/
 ├── AppScope/
-│   ├── app.json5              # Uygulama genel yapılandırması / App-level config
+│   ├── app.json5              # App-level config
 │   └── resources/
 │       └── base/
 │           └── element/
@@ -223,39 +184,35 @@ MyWearableApp/
 │       └── main/
 │           ├── ets/
 │           │   ├── entryability/
-│           │   │   └── EntryAbility.ets   # UIAbility giriş noktası / Entry point
+│           │   │   └── EntryAbility.ets   # Entry point
 │           │   └── pages/
-│           │       └── Index.ets          # Ana sayfa / Main page
+│           │       └── Index.ets          # Main page
 │           ├── resources/
 │           │   ├── base/
-│           │   │   ├── element/           # String, color, float kaynakları
-│           │   │   └── media/             # Görseller / Images
-│           │   └── en_US/                 # Dil kaynakları / Language resources
-│           └── module.json5               # Modül yapılandırması / Module config
-├── oh-package.json5           # Paket bağımlılıkları / Package dependencies
-└── build-profile.json5        # Build yapılandırması / Build config
+│           │   │   ├── element/           # String, color, float resources
+│           │   │   └── media/             # Images
+│           │   └── en_US/                 # Language resources
+│           └── module.json5               # Module config
+├── oh-package.json5           # Package dependencies
+└── build-profile.json5        # Build config
 ```
 
 ---
 
-## 4. İlk ArkTS Bileşeni / First ArkTS Component
+## 4. First ArkTS Component
 
-**TR:** ArkTS ile basit bir wearable bileşeni oluşturalım. ArkUI dekoratörleri ve temel bileşenler ile çalışmayı öğrenin.
+Let's create a simple wearable component with ArkTS. Learn to work with ArkUI decorators and basic components.
 
-**EN:** Let's create a simple wearable component with ArkTS. Learn to work with ArkUI decorators and basic components.
+### 4.1 Basic @Entry @Component Example
 
-### 4.1 Basit @Entry @Component Örneği / Basic @Entry @Component Example
+Every page must contain at least one component marked with the `@Entry` decorator. `@Component` defines reusable UI components.
 
-**TR:** Her sayfa en az bir `@Entry` dekoratörü ile işaretlenmiş bir bileşen içermelidir. `@Component` ise yeniden kullanılabilir UI bileşenlerini tanımlar.
-
-**EN:** Every page must contain at least one component marked with the `@Entry` decorator. `@Component` defines reusable UI components.
-
-Dosya: `entry/src/main/ets/pages/Index.ets`
+File: `entry/src/main/ets/pages/Index.ets`
 
 ```typescript
 import { sensor } from '@kit.SensorServiceKit';
 
-// Yeniden kullanılabilir alt bileşen / Reusable sub-component
+// Reusable sub-component
 @Component
 struct StepCounter {
   @Prop steps: number = 0;
@@ -266,7 +223,7 @@ struct StepCounter {
         .fontSize(36)
         .fontWeight(FontWeight.Bold)
         .fontColor('#FFFFFF')
-      Text('Adım / Steps')
+      Text('Steps')
         .fontSize(14)
         .fontColor('#AAAAAA')
         .margin({ top: 4 })
@@ -275,7 +232,7 @@ struct StepCounter {
   }
 }
 
-// Ana sayfa bileşeni / Main page component
+// Main page component
 @Entry
 @Component
 struct Index {
@@ -285,14 +242,14 @@ struct Index {
 
   build() {
     Column() {
-      // Başlık / Header
+      // Header
       Text('My Watch App')
         .fontSize(18)
         .fontColor('#FFFFFF')
         .fontWeight(FontWeight.Medium)
         .margin({ top: 20, bottom: 16 })
 
-      // Adım sayacı kartı / Step counter card
+      // Step counter card
       Column() {
         StepCounter({ steps: this.stepCount })
       }
@@ -302,7 +259,7 @@ struct Index {
       .borderRadius(12)
       .margin({ bottom: 12 })
 
-      // Kalp atışı bilgisi / Heart rate info
+      // Heart rate info
       Row() {
         Text('HR: ')
           .fontSize(16)
@@ -314,8 +271,8 @@ struct Index {
       }
       .margin({ bottom: 20 })
 
-      // Kontrol butonu / Control button
-      Button(this.isMonitoring ? 'Durdur / Stop' : 'Başlat / Start')
+      // Control button
+      Button(this.isMonitoring ? 'Stop' : 'Start')
         .width('70%')
         .height(40)
         .fontSize(14)
@@ -338,7 +295,7 @@ struct Index {
 
   private startSensors(): void {
     console.info('[WearableApp] Sensors started');
-    // Sensör başlatma kodu aşağıdaki bölümde / Sensor start code in the section below
+    // Sensor start code in the section below
   }
 
   private stopSensors(): void {
@@ -349,19 +306,17 @@ struct Index {
 }
 ```
 
-### 4.2 @State ile State Yönetimi / State Management with @State
+### 4.2 State Management with @State
 
-**TR:** `@State`, bir bileşenin dahili reaktif durumunu tanımlar. State değiştiğinde, bağlı UI otomatik olarak güncellenir.
-
-**EN:** `@State` defines a component's internal reactive state. When state changes, the bound UI updates automatically.
+`@State` defines a component's internal reactive state. When state changes, the bound UI updates automatically.
 
 ```typescript
 @Entry
 @Component
 struct CounterExample {
-  // @State: bileşen kendi state'ini sahiplenir / component owns its state
+  // @State: component owns its state
   @State count: number = 0;
-  @State message: string = 'Sayaç / Counter';
+  @State message: string = 'Counter';
 
   build() {
     Column({ space: 12 }) {
@@ -390,7 +345,7 @@ struct CounterExample {
           .onClick(() => {
             this.count++;
             if (this.count >= 10) {
-              this.message = 'Harika! / Great!';
+              this.message = 'Great!';
             }
           })
       }
@@ -404,22 +359,20 @@ struct CounterExample {
 }
 ```
 
-### 4.3 ArkUI Temel Bileşenleri / Core ArkUI Components
+### 4.3 Core ArkUI Components
 
-**TR:** Wearable uygulamalarında en sık kullanılan ArkUI bileşenlerine örnekler:
-
-**EN:** Examples of the most commonly used ArkUI components in wearable apps:
+Examples of the most commonly used ArkUI components in wearable apps:
 
 ```typescript
 @Entry
 @Component
 struct UIComponentsDemo {
   @State selectedIndex: number = 0;
-  private menuItems: string[] = ['Ana Sayfa', 'Sağlık', 'Aktivite'];
+  private menuItems: string[] = ['Home', 'Health', 'Activity'];
 
   build() {
     Column() {
-      // Text - Metin bileşeni / Text component
+      // Text component
       Text('HarmonyOS Watch')
         .fontSize(20)
         .fontColor('#FFFFFF')
@@ -428,7 +381,7 @@ struct UIComponentsDemo {
         .maxLines(2)
         .textOverflow({ overflow: TextOverflow.Ellipsis })
 
-      // Row - Yatay düzen / Horizontal layout
+      // Row — horizontal layout
       Row({ space: 8 }) {
         ForEach(this.menuItems, (item: string, index: number) => {
           Text(item)
@@ -443,11 +396,11 @@ struct UIComponentsDemo {
       .justifyContent(FlexAlign.SpaceEvenly)
       .padding({ top: 8, bottom: 8 })
 
-      // Column - Dikey düzen / Vertical layout
+      // Column — vertical layout
       Column({ space: 6 }) {
-        this.buildMetricCard('Adım / Steps', '8,432', '#4CAF50')
-        this.buildMetricCard('Kalori / Calories', '342 kcal', '#FF9800')
-        this.buildMetricCard('Mesafe / Distance', '6.2 km', '#2196F3')
+        this.buildMetricCard('Steps', '8,432', '#4CAF50')
+        this.buildMetricCard('Calories', '342 kcal', '#FF9800')
+        this.buildMetricCard('Distance', '6.2 km', '#2196F3')
       }
       .width('100%')
       .padding({ left: 8, right: 8 })
@@ -482,13 +435,11 @@ struct UIComponentsDemo {
 
 ---
 
-## 5. Sensör API'leri / Sensor APIs
+## 5. Sensor APIs
 
-**TR:** HarmonyOS, `@ohos.sensor` modülü aracılığıyla giyilebilir cihazlardaki sensörlere erişim sağlar. Kullanmadan önce gerekli izinlerin `module.json5`'e eklendiğinden emin olun.
+HarmonyOS provides access to sensors on wearable devices through the `@ohos.sensor` module. Make sure the required permissions are added to `module.json5` before use.
 
-**EN:** HarmonyOS provides access to sensors on wearable devices through the `@ohos.sensor` module. Make sure the required permissions are added to `module.json5` before use.
-
-### 5.1 @ohos.sensor Modülü / @ohos.sensor Module
+### 5.1 @ohos.sensor Module
 
 ```typescript
 import { sensor } from '@kit.SensorServiceKit';
@@ -496,11 +447,9 @@ import { abilityAccessCtrl, Permissions } from '@kit.AbilityKit';
 import { BusinessError } from '@kit.BasicServicesKit';
 ```
 
-### 5.2 Adım Sayar (Pedometer) Sensor Örneği / Pedometer Sensor Example
+### 5.2 Pedometer Sensor Example
 
-**TR:** Adım sayar sensörü, kullanıcının adım verilerini gerçek zamanlı olarak izler. `ohos.permission.ACTIVITY_MOTION` iznini gerektirir.
-
-**EN:** The pedometer sensor monitors the user's step data in real time. Requires the `ohos.permission.ACTIVITY_MOTION` permission.
+The pedometer sensor monitors the user's step data in real time. Requires the `ohos.permission.ACTIVITY_MOTION` permission.
 
 ```typescript
 import { sensor } from '@kit.SensorServiceKit';
@@ -522,7 +471,7 @@ struct PedometerDemo {
     this.stopPedometer();
   }
 
-  // İzin isteme / Request permission
+  // Request permission
   async requestPermission(): Promise<void> {
     const permissions: Permissions[] = ['ohos.permission.ACTIVITY_MOTION'];
     const atManager = abilityAccessCtrl.createAtManager();
@@ -541,16 +490,15 @@ struct PedometerDemo {
     }
   }
 
-  // Sensörü başlat / Start sensor
+  // Start sensor
   startPedometer(): void {
     try {
       sensor.on(sensor.SensorId.PEDOMETER, (data: sensor.PedometerResponse) => {
-        // data.steps: toplam adım sayısı (cihaz yeniden başlayana kadar birikimli)
         // data.steps: cumulative step count (until device reboot)
         this.steps = data.steps;
         console.info(`[Pedometer] Steps: ${data.steps}`);
       }, {
-        interval: 1000000000 // nanosaniye cinsinden 1 saniye / 1 second in nanoseconds
+        interval: 1000000000 // 1 second in nanoseconds
       });
     } catch (err) {
       const error = err as BusinessError;
@@ -558,7 +506,7 @@ struct PedometerDemo {
     }
   }
 
-  // Sensörü durdur / Stop sensor
+  // Stop sensor
   stopPedometer(): void {
     try {
       sensor.off(sensor.SensorId.PEDOMETER);
@@ -571,7 +519,7 @@ struct PedometerDemo {
 
   build() {
     Column({ space: 16 }) {
-      Text('Adım Sayacı / Pedometer')
+      Text('Pedometer')
         .fontSize(18)
         .fontColor('#FFFFFF')
 
@@ -580,12 +528,12 @@ struct PedometerDemo {
         .fontColor('#4CAF50')
         .fontWeight(FontWeight.Bold)
 
-      Text('adım / steps')
+      Text('steps')
         .fontSize(14)
         .fontColor('#888888')
 
       if (!this.permissionGranted) {
-        Text('İzin bekleniyor... / Waiting for permission...')
+        Text('Waiting for permission...')
           .fontSize(12)
           .fontColor('#FF9800')
       }
@@ -599,11 +547,9 @@ struct PedometerDemo {
 }
 ```
 
-### 5.3 Kalp Atışı Sensörü / Heart Rate Sensor
+### 5.3 Heart Rate Sensor
 
-**TR:** Kalp atışı sensörü anlık nabız verisini sağlar. `ohos.permission.READ_HEALTH_DATA` iznini gerektirir.
-
-**EN:** The heart rate sensor provides real-time pulse data. Requires the `ohos.permission.READ_HEALTH_DATA` permission.
+The heart rate sensor provides real-time pulse data. Requires the `ohos.permission.READ_HEALTH_DATA` permission.
 
 ```typescript
 import { sensor } from '@kit.SensorServiceKit';
@@ -626,17 +572,16 @@ struct HeartRateDemo {
   startHeartRateSensor(): void {
     try {
       sensor.on(sensor.SensorId.HEART_RATE, (data: sensor.HeartRateResponse) => {
-        // data.heartRate: nabız değeri (BPM cinsinden)
         // data.heartRate: heart rate value in BPM
         this.heartRate = data.heartRate;
 
-        // Accuracy seviyeleri / Accuracy levels:
+        // Accuracy levels:
         // 0 = Unreliable, 1 = Low, 2 = Medium, 3 = High
         this.accuracy = data.accuracy ?? 0;
 
         console.info(`[HeartRate] BPM: ${data.heartRate}, Accuracy: ${this.accuracy}`);
       }, {
-        interval: 'normal' // 'normal' | 'ui' | 'game' | 'fastest' veya nanosaniye
+        interval: 'normal' // 'normal' | 'ui' | 'game' | 'fastest' or nanoseconds
       });
     } catch (err) {
       const error = err as BusinessError;
@@ -645,15 +590,15 @@ struct HeartRateDemo {
   }
 
   getHeartRateColor(): string {
-    if (this.heartRate < 60) return '#2196F3';   // Düşük / Low
+    if (this.heartRate < 60) return '#2196F3';   // Low
     if (this.heartRate < 100) return '#4CAF50';  // Normal
-    if (this.heartRate < 140) return '#FF9800';  // Yüksek / High
-    return '#F44336';                             // Çok yüksek / Very high
+    if (this.heartRate < 140) return '#FF9800';  // High
+    return '#F44336';                             // Very high
   }
 
   build() {
     Column({ space: 12 }) {
-      Text('Kalp Atışı / Heart Rate')
+      Text('Heart Rate')
         .fontSize(16)
         .fontColor('#CCCCCC')
 
@@ -684,17 +629,15 @@ struct HeartRateDemo {
 }
 ```
 
-### 5.4 İzin Yönetimi / Permission Management
+### 5.4 Permission Management
 
-**TR:** Wearable uygulamaları için kritik izinler `module.json5` dosyasında tanımlanmalı ve çalışma zamanında kullanıcıdan isteniyor olmalıdır.
-
-**EN:** Critical permissions for wearable apps must be declared in `module.json5` and requested from the user at runtime.
+Critical permissions for wearable apps must be declared in `module.json5` and requested from the user at runtime.
 
 ```typescript
 import { abilityAccessCtrl, common, Permissions } from '@kit.AbilityKit';
 import { BusinessError } from '@kit.BasicServicesKit';
 
-// İzinleri toplu olarak isteme / Batch permission request
+// Batch permission request
 async function requestWearablePermissions(context: common.UIAbilityContext): Promise<boolean> {
   const permissions: Permissions[] = [
     'ohos.permission.ACTIVITY_MOTION',
@@ -732,38 +675,26 @@ async function requestWearablePermissions(context: common.UIAbilityContext): Pro
 
 ## 6. Wearable UI Best Practices
 
-**TR:** Wearable uygulamalarında UI tasarımı, telefon uygulamalarından önemli ölçüde farklıdır. Küçük ve genellikle dairesel ekranlar için optimize edilmiş tasarım prensipleri uygulamalısınız.
+UI design in wearable applications differs significantly from phone applications. You should apply design principles optimized for small and often circular screens.
 
-**EN:** UI design in wearable applications differs significantly from phone applications. You should apply design principles optimized for small and often circular screens.
+### 6.1 Small Screen Design Principles
 
-### 6.1 Küçük Ekran Tasarım Prensipleri / Small Screen Design Principles
-
-**TR:**
-- **İçerik önceliği:** Sadece en önemli bilgiyi gösterin; gereksiz öğeleri kaldırın.
-- **Büyük ve okunabilir yazı:** Minimum 14sp font boyutu, en az 36sp başlıklar.
-- **Yüksek kontrast:** Koyu arka plan üzerine açık metin (WCAG AA standardı).
-- **Tek eldeli kullanım:** Aşağı kaydırma yeterli; karmaşık navigasyon kaçının.
-
-**EN:**
 - **Content priority:** Show only the most important information; remove unnecessary elements.
 - **Large, readable text:** Minimum 14sp font size, at least 36sp for headings.
 - **High contrast:** Light text on dark background (WCAG AA standard).
 - **One-handed use:** Scrolling down is sufficient; avoid complex navigation.
 
-### 6.2 Dairesel/Kare Ekran Uyumluluğu / Circular/Square Screen Compatibility
+### 6.2 Circular/Square Screen Compatibility
 
-**TR:** Bazı akıllı saatler dairesel, bazıları kare ekrana sahiptir. Her iki form faktörü için içerik köşelerde kesilmemeli.
-
-**EN:** Some smartwatches have circular screens, others are square. Content should not be clipped at corners for either form factor.
+Some smartwatches have circular screens, others are square. Content should not be clipped at corners for either form factor.
 
 ```typescript
 @Entry
 @Component
 struct CircularAdaptiveLayout {
   build() {
-    // Shape-adaptive container / Şekle uyarlanabilir container
+    // Shape-adaptive container
     Column() {
-      // Dairesel ekranda köşe padding'i artır
       // Increase corner padding on circular screens
       Column({ space: 8 }) {
         Text('Watch Face')
@@ -776,7 +707,7 @@ struct CircularAdaptiveLayout {
           .fontColor('#FFFFFF')
           .fontWeight(FontWeight.Light)
 
-        Text('Per, 26 Mar')
+        Text('Thu, 26 Mar')
           .fontSize(14)
           .fontColor('#AAAAAA')
       }
@@ -784,7 +715,6 @@ struct CircularAdaptiveLayout {
       .height('100%')
       .alignItems(HorizontalAlign.Center)
       .justifyContent(FlexAlign.Center)
-      // %15 yatay padding dairesel ekranda içeriği güvende tutar
       // 15% horizontal padding keeps content safe on circular screens
       .padding({
         left: '15%',
@@ -800,20 +730,18 @@ struct CircularAdaptiveLayout {
 }
 ```
 
-### 6.3 Yazı Boyutu ve Dokunmatik Hedef Boyutları / Font Size and Touch Target Sizes
+### 6.3 Font Size and Touch Target Sizes
 
-**TR:** Dokunmatik hedefler en az 7x7mm (yaklaşık 48x48dp) olmalıdır. Wearable ekranlarda bu özellikle önemlidir.
+Touch targets should be at least 7x7mm (approximately 48x48dp). This is especially important on wearable screens.
 
-**EN:** Touch targets should be at least 7x7mm (approximately 48x48dp). This is especially important on wearable screens.
-
-| Öğe / Element | Minimum Boyut / Min Size | Önerilen / Recommended |
+| Element | Min Size | Recommended |
 |---|---|---|
-| Buton / Button | 44 x 44 vp | 48 x 48 vp |
-| İkon Butonu / Icon Button | 40 x 40 vp | 44 x 44 vp |
-| Liste Öğesi / List Item | yükseklik 40 vp / height 40 vp | 48 vp |
-| Başlık Fontu / Title Font | 18 sp | 20-24 sp |
-| Gövde Fontu / Body Font | 14 sp | 16 sp |
-| Alt Metin / Caption | 11 sp | 12 sp |
+| Button | 44 x 44 vp | 48 x 48 vp |
+| Icon Button | 40 x 40 vp | 44 x 44 vp |
+| List Item | height 40 vp | 48 vp |
+| Title Font | 18 sp | 20-24 sp |
+| Body Font | 14 sp | 16 sp |
+| Caption | 11 sp | 12 sp |
 
 ```typescript
 @Component
@@ -823,23 +751,21 @@ struct AccessibleButton {
 
   build() {
     Button(this.label)
-      // Minimum dokunmatik hedef boyutu / Minimum touch target size
+      // Minimum touch target size
       .width(48)
       .height(48)
-      // Minimum font boyutu / Minimum font size
+      // Minimum font size
       .fontSize(14)
-      // Yeterli padding / Adequate padding
+      // Adequate padding
       .padding({ left: 12, right: 12 })
       .onClick(this.onPress)
   }
 }
 ```
 
-### 6.4 Pil Optimizasyonu / Battery Optimization
+### 6.4 Battery Optimization
 
-**TR:** Wearable cihazlarda pil kapasitesi sınırlıdır. Sensörleri sadece gerektiğinde açın ve kapatın.
-
-**EN:** Battery capacity is limited on wearable devices. Turn sensors on only when needed and off when not in use.
+Battery capacity is limited on wearable devices. Turn sensors on only when needed and off when not in use.
 
 ```typescript
 @Entry
@@ -848,17 +774,16 @@ struct BatteryOptimizedApp {
   @State isActive: boolean = false;
   private sensorTimer: number = -1;
 
-  // Sensörü zamanlanmış aralıklarla kullan (sürekli değil)
   // Use sensor at timed intervals (not continuously)
   startOptimizedSensing(): void {
     this.sensorTimer = setInterval(() => {
-      // Her 30 saniyede bir kısa ölçüm / Short measurement every 30 seconds
+      // Short measurement every 30 seconds
       sensor.on(sensor.SensorId.HEART_RATE, (data: sensor.HeartRateResponse) => {
         console.info(`[Battery] Quick HR read: ${data.heartRate}`);
-        // Okuma sonrası hemen kapat / Turn off immediately after reading
+        // Turn off immediately after reading
         sensor.off(sensor.SensorId.HEART_RATE);
       });
-    }, 30000); // 30 saniye / 30 seconds
+    }, 30000); // 30 seconds
   }
 
   stopOptimizedSensing(): void {
@@ -871,15 +796,13 @@ struct BatteryOptimizedApp {
   }
 
   aboutToDisappear(): void {
-    // Bileşen yok edildiğinde sensörleri kapat
     // Stop sensors when component is destroyed
     this.stopOptimizedSensing();
   }
 
   build() {
-    // ... UI
     Column() {
-      Text('Pil Dostu Mod / Battery Saver Mode')
+      Text('Battery Saver Mode')
         .fontSize(16)
         .fontColor('#FFFFFF')
     }
@@ -894,116 +817,100 @@ struct BatteryOptimizedApp {
 
 ---
 
-## 7. Test ve Deploy / Testing and Deployment
+## 7. Testing and Deployment
 
-**TR:** Uygulamanızı önce emülatörde test edin, ardından gerçek bir cihaza deploy edin.
+Test your application on the emulator first, then deploy to a real device.
 
-**EN:** Test your application on the emulator first, then deploy to a real device.
+### 7.1 Testing on Emulator
 
-### 7.1 Emülatörde Test / Testing on Emulator
+1. In DevEco Studio, select **Run > Run 'entry'** or use the `Shift+F10` shortcut.
 
-1. DevEco Studio'da **Run > Run 'entry'** seçin veya `Shift+F10` kısayolunu kullanın.
-   In DevEco Studio, select **Run > Run 'entry'** or use the `Shift+F10` shortcut.
+2. Select your wearable emulator from Device Manager.
 
-2. Device Manager'dan wearable emülatörünüzü seçin.
-   Select your wearable emulator from Device Manager.
+3. Build and deploy happen automatically.
 
-3. Build ve deploy otomatik gerçekleşir.
-   Build and deploy happen automatically.
+**Sensor Simulation on Emulator:**
 
-**Emülatörde Sensör Simülasyonu / Sensor Simulation on Emulator:**
-
-DevEco Studio'nun **Extended Controls** panelinden sanal sensör verileri gönderebilirsiniz:
 You can send virtual sensor data from DevEco Studio's **Extended Controls** panel:
 
-- **Steps:** Virtual pedometer değeri ayarlayın / Set virtual pedometer value
-- **Heart Rate:** Simüle edilmiş nabız değeri girin / Enter simulated heart rate value
-- **Location:** GPS koordinatları simüle edin / Simulate GPS coordinates
+- **Steps:** Set virtual pedometer value
+- **Heart Rate:** Enter simulated heart rate value
+- **Location:** Simulate GPS coordinates
 
-### 7.2 Gerçek Cihazda Debug / Debug on Real Device
+### 7.2 Debug on Real Device
 
-**TR:** Gerçek bir HarmonyOS wearable cihazda test etmek için:
+To test on a real HarmonyOS wearable device:
 
-**EN:** To test on a real HarmonyOS wearable device:
+1. Enable **Developer Options** on the watch: Settings > About > Tap Build Number 7 times.
 
-1. Saatte **Geliştirici Seçenekleri**'ni etkinleştirin: Ayarlar > Hakkında > Derleme numarasına 7 kez dokunun.
-   Enable **Developer Options** on the watch: Settings > About > Tap Build Number 7 times.
+2. Enable **USB Debugging**: Developer Options > USB Debugging.
 
-2. **USB Hata Ayıklama**'yı etkinleştirin: Geliştirici Seçenekleri > USB Hata Ayıklama.
-   Enable **USB Debugging**: Developer Options > USB Debugging.
+3. Connect the watch to your computer via USB or Bluetooth.
 
-3. Saati USB veya Bluetooth ile bilgisayara bağlayın.
-   Connect the watch to your computer via USB or Bluetooth.
+4. Verify your device appears in Device Manager in DevEco Studio.
 
-4. DevEco Studio'da cihazınızın Device Manager'da göründüğünü doğrulayın.
-   Verify your device appears in Device Manager in DevEco Studio.
+### 7.3 hdc Commands
 
-### 7.3 hdc Komutları / hdc Commands
-
-**TR:** `hdc` (HarmonyOS Device Connector), cihaz yönetimi için komut satırı aracıdır. `DevEco Studio/sdk/toolchains/` dizininde bulunur.
-
-**EN:** `hdc` (HarmonyOS Device Connector) is the command-line tool for device management. It is located in the `DevEco Studio/sdk/toolchains/` directory.
+`hdc` (HarmonyOS Device Connector) is the command-line tool for device management. It is located in the `DevEco Studio/sdk/toolchains/` directory.
 
 ```bash
-# Bağlı cihazları listele / List connected devices
+# List connected devices
 hdc list targets
 
-# Uygulama paketi deploy et / Deploy app package
+# Deploy app package
 hdc app install MyWearableApp.hap
 
-# Uygulamayı kaldır / Uninstall application
+# Uninstall application
 hdc app uninstall com.example.mywearableapp
 
-# Cihaz loglarını izle / Monitor device logs
+# Monitor device logs
 hdc hilog
 
-# Belirli tag ile log filtrele / Filter logs by tag
+# Filter logs by tag
 hdc hilog | grep "WearableApp"
 
-# Uygulamayı başlat / Start application
+# Start application
 hdc shell aa start -a EntryAbility -b com.example.mywearableapp
 
-# Uygulamayı durdur / Stop application
+# Stop application
 hdc shell aa force-stop com.example.mywearableapp
 
-# Dosya gönder / Send file to device
+# Send file to device
 hdc file send ./localfile.txt /data/local/tmp/
 
-# Cihazdan dosya al / Get file from device
+# Get file from device
 hdc file recv /data/local/tmp/logfile.txt ./
 
-# Cihaz bilgilerini görüntüle / View device information
+# View device information
 hdc shell param get const.product.model
 
-# Pil durumunu kontrol et / Check battery status
+# Check battery status
 hdc shell hidumper -s BatteryService -a info
 ```
 
-### 7.4 Yaygın Sorunlar ve Çözümleri / Common Issues and Solutions
+### 7.4 Common Issues and Solutions
 
-| Sorun / Issue | Olası Neden / Possible Cause | Çözüm / Solution |
+| Issue | Possible Cause | Solution |
 |---|---|---|
-| Cihaz görünmüyor / Device not visible | USB sürücüsü yok / No USB driver | Huawei USB driver yükle / Install Huawei USB driver |
-| Build hatası / Build error | API Level uyumsuzluğu / API Level mismatch | `build-profile.json5` API seviyesini kontrol et / Check API level |
-| Sensör verisi gelmiyor / No sensor data | İzin reddedildi / Permission denied | `module.json5` izinlerini doğrula / Verify permissions |
-| App crash on launch | ArkTS tip hatası / ArkTS type error | Logcat'te detaylı hatayı incele / Check detailed error in logcat |
-| Emülatör yavaş / Slow emulator | RAM yetersiz / Insufficient RAM | Emülatör RAM'ini artır / Increase emulator RAM |
+| Device not visible | No USB driver | Install Huawei USB driver |
+| Build error | API Level mismatch | Check API level in `build-profile.json5` |
+| No sensor data | Permission denied | Verify permissions in `module.json5` |
+| App crash on launch | ArkTS type error | Check detailed error in logcat |
+| Slow emulator | Insufficient RAM | Increase emulator RAM |
 
 ---
 
-## Sonraki Adımlar / Next Steps
+## Next Steps
 
-**TR:** Bu rehberi tamamladıktan sonra şu konuları araştırmanızı öneririz:
+After completing this guide, we recommend exploring the following topics:
 
-**EN:** After completing this guide, we recommend exploring the following topics:
-
-- **Health Kit:** Kapsamlı sağlık verisi API'leri için `@ohos.health` modülü
-- **Distributed DevKit:** Telefon-saat arası veri paylaşımı
-- **Watch Face Development:** Özel saat kadranı geliştirme
-- **ArkUI Animation:** Bileşen animasyonları ve geçiş efektleri
-- **Notification Management:** Wearable bildirim yönetimi
-- **API Cheatsheet:** Tüm API referansı için `api-cheatsheet.md` dosyasına bakın
+- **Health Kit:** `@ohos.health` module for comprehensive health data APIs
+- **Distributed DevKit:** Data sharing between phone and watch
+- **Watch Face Development:** Custom watch face development
+- **ArkUI Animation:** Component animations and transition effects
+- **Notification Management:** Wearable notification management
+- **API Cheatsheet:** See `api-cheatsheet.md` for the full API reference
 
 ---
 
-*Son güncelleme / Last updated: March 2026 | HarmonyOS API Level 11+ | DevEco Studio 4.1+*
+*Last updated: March 2026 | HarmonyOS API Level 11+ | DevEco Studio 4.1+*

@@ -1,47 +1,47 @@
 /**
- * SleepTracker.ets - Uyku Analizi Sayfası
+ * SleepTracker.ets - Sleep Analysis Page
  *
- * Uyku evresi dağılımı (Derin Uyku / Hafif Uyku / REM / Uyanıklık),
- * toplam uyku süresi, uyku skoru ve uyku kalitesi önerileri.
+ * Sleep phase distribution (Deep Sleep / Light Sleep / REM / Awake),
+ * total sleep duration, sleep score, and sleep quality recommendations.
  *
- * @ohos.health API ile uyku verisi entegrasyonu.
- * Gerçek veri yoksa mock analiz sonuçları gösterilir.
+ * Integrates with @ohos.health API for sleep data.
+ * Displays mock analysis results when real data is unavailable.
  */
 
 import router from '@ohos.router'
 import { RingProgress } from '../components/RingProgress'
 
-// Uyku evresi tanımı
+// Sleep phase definition
 interface SleepPhase {
-  name: string          // Evre adı
-  durationMin: number   // Süre (dakika)
-  color: string         // Grafik rengi
-  icon: string          // Evre ikonu
-  percentage: number    // Toplam uyku yüzdesi
+  name: string          // Phase name
+  durationMin: number   // Duration (minutes)
+  color: string         // Chart color
+  icon: string          // Phase icon
+  percentage: number    // Percentage of total sleep
 }
 
-// Gece uyku kaydı
+// Nightly sleep record
 interface NightRecord {
-  date: string          // Tarih etiketi
-  score: number         // Uyku skoru (0-100)
-  totalHours: number    // Toplam saat
+  date: string          // Date label
+  score: number         // Sleep score (0-100)
+  totalHours: number    // Total hours
   quality: 'excellent' | 'good' | 'fair' | 'poor'
 }
 
-// Uyku analiz özeti
+// Sleep analysis summary
 interface SleepSummary {
-  bedTime: string         // Yatış saati
-  wakeTime: string        // Kalkış saati
-  totalMinutes: number    // Toplam uyku dakikası
-  score: number           // Uyku skoru
-  interruptions: number   // Uyanma sayısı
-  restfulnessPercent: number  // Dinlendiricilik yüzdesi
+  bedTime: string         // Bedtime
+  wakeTime: string        // Wake time
+  totalMinutes: number    // Total sleep minutes
+  score: number           // Sleep score
+  interruptions: number   // Number of awakenings
+  restfulnessPercent: number  // Restfulness percentage
 }
 
 @Entry
 @Component
 struct SleepTracker {
-  // Uyku özeti
+  // Sleep summary
   @State private summary: SleepSummary = {
     bedTime: '23:15',
     wakeTime: '07:08',
@@ -51,31 +51,31 @@ struct SleepTracker {
     restfulnessPercent: 87
   }
 
-  // Uyku evreleri dağılımı
+  // Sleep phase distribution
   @State private phases: SleepPhase[] = [
     {
-      name: 'Derin Uyku',
+      name: 'Deep Sleep',
       durationMin: 94,
       color: '#1A237E',
       icon: '🌊',
       percentage: 20
     },
     {
-      name: 'REM Uykusu',
+      name: 'REM Sleep',
       durationMin: 104,
       color: '#7B68EE',
       icon: '💭',
       percentage: 22
     },
     {
-      name: 'Hafif Uyku',
+      name: 'Light Sleep',
       durationMin: 236,
       color: '#4FC3F7',
       icon: '🌙',
       percentage: 50
     },
     {
-      name: 'Uyanıklık',
+      name: 'Awake',
       durationMin: 39,
       color: '#FF8A65',
       icon: '👁️',
@@ -83,13 +83,13 @@ struct SleepTracker {
     }
   ]
 
-  // Son 7 günlük geçmiş
+  // Last 7 nights history
   @State private weekHistory: NightRecord[] = []
 
-  // Seçilen sekme (Analiz / Geçmiş / Öneriler)
+  // Selected tab (Analysis / History / Tips)
   @State private selectedTab: number = 0
 
-  // Uyku tarama durumu
+  // Sleep tracking state
   @State private isTracking: boolean = false
   @State private nextTrackingTime: string = '22:30'
 
@@ -98,10 +98,10 @@ struct SleepTracker {
   }
 
   /**
-   * Son 7 gece için mock geçmiş oluştur
+   * Generate mock history for the last 7 nights
    */
   private generateWeekHistory() {
-    const days = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt']
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
     const today = new Date()
     const history: NightRecord[] = []
 
@@ -113,7 +113,7 @@ struct SleepTracker {
       const hours = 5.5 + Math.random() * 3
 
       history.push({
-        date: i === 0 ? 'Dün gece' : dayName,
+        date: i === 0 ? 'Last night' : dayName,
         score,
         totalHours: Math.round(hours * 10) / 10,
         quality: score >= 85 ? 'excellent' : score >= 70 ? 'good' : score >= 55 ? 'fair' : 'poor'
@@ -123,7 +123,7 @@ struct SleepTracker {
   }
 
   /**
-   * Uyku skoruna göre renk döndür
+   * Returns color based on sleep score
    */
   private getScoreColor(score: number): string {
     if (score >= 85) return '#00C853'
@@ -133,47 +133,47 @@ struct SleepTracker {
   }
 
   /**
-   * Uyku kalitesi etiketini döndür
+   * Returns sleep quality label
    */
   private getQualityLabel(quality: string): string {
     switch (quality) {
-      case 'excellent': return 'Mükemmel'
-      case 'good': return 'İyi'
-      case 'fair': return 'Orta'
-      case 'poor': return 'Zayıf'
-      default: return 'Bilinmiyor'
+      case 'excellent': return 'Excellent'
+      case 'good': return 'Good'
+      case 'fair': return 'Fair'
+      case 'poor': return 'Poor'
+      default: return 'Unknown'
     }
   }
 
   /**
-   * Toplam uyku süresini saat:dakika formatına dönüştür
+   * Format total sleep duration as hours:minutes
    */
   private formatDuration(minutes: number): string {
     const h = Math.floor(minutes / 60)
     const m = minutes % 60
-    return `${h}s ${m}dk`
+    return `${h}h ${m}m`
   }
 
   /**
-   * Uyku evresi çubuk genişliğini hesapla (yüzdeye göre)
+   * Calculate phase bar width based on percentage
    */
   private getPhaseBarWidth(percentage: number): string {
     return `${Math.max(percentage, 3)}%`
   }
 
   /**
-   * Evre süresini dakika cinsinden formatla
+   * Format phase duration in minutes
    */
   private formatPhaseTime(minutes: number): string {
-    if (minutes < 60) return `${minutes}dk`
+    if (minutes < 60) return `${minutes}m`
     const h = Math.floor(minutes / 60)
     const m = minutes % 60
-    return m > 0 ? `${h}s ${m}dk` : `${h}s`
+    return m > 0 ? `${h}h ${m}m` : `${h}h`
   }
 
   build() {
     Column() {
-      // ── Başlık ────────────────────────────────────────────────────
+      // ── Header ─────────────────────────────────────────────────
       Row() {
         Button('←')
           .fontSize(18)
@@ -184,14 +184,14 @@ struct SleepTracker {
           .borderRadius(18)
           .onClick(() => router.back())
 
-        Text('Uyku Analizi')
+        Text('Sleep Analysis')
           .fontSize(16)
           .fontColor('#FFFFFF')
           .fontWeight(FontWeight.Bold)
           .layoutWeight(1)
           .textAlign(TextAlign.Center)
 
-        // Uyku Takibi Toggle
+        // Sleep Tracking Toggle
         Toggle({ type: ToggleType.Switch, isOn: this.isTracking })
           .selectedColor('#7B68EE')
           .onChange((isOn: boolean) => {
@@ -203,9 +203,9 @@ struct SleepTracker {
       .width('100%')
       .padding({ left: 8, right: 8, top: 8, bottom: 4 })
 
-      // ── Sekme Seçici ─────────────────────────────────────────────
+      // ── Tab Selector ──────────────────────────────────────────
       Row() {
-        ForEach(['Analiz', 'Geçmiş', 'Öneriler'], (tab: string, index: number) => {
+        ForEach(['Analysis', 'History', 'Tips'], (tab: string, index: number) => {
           Text(tab)
             .fontSize(11)
             .fontColor(this.selectedTab === index ? '#FFFFFF' : '#666666')
@@ -226,13 +226,13 @@ struct SleepTracker {
         Column({ space: 10 }) {
 
           if (this.selectedTab === 0) {
-            // ════════════════════════════════════════════════════════
-            // SEKME 1: ANALİZ
-            // ════════════════════════════════════════════════════════
+            // ════════════════════════════════════════════════════
+            // TAB 1: ANALYSIS
+            // ════════════════════════════════════════════════════
 
-            // Uyku Skoru Kartı
+            // Sleep Score Card
             Row() {
-              // Sol: Dairesel Skor
+              // Left: Circular Score
               RingProgress({
                 progress: this.summary.score / 100,
                 size: 80,
@@ -249,16 +249,16 @@ struct SleepTracker {
                 }
               })
 
-              // Sağ: Detaylar
+              // Right: Details
               Column({ space: 4 }) {
-                Text('Uyku Skoru')
+                Text('Sleep Score')
                   .fontSize(11)
                   .fontColor('#AAAAAA')
 
                 Text(
-                  this.summary.score >= 85 ? '🌟 Mükemmel Uyku' :
-                  this.summary.score >= 70 ? '✅ İyi Uyku' :
-                  this.summary.score >= 55 ? '⚠️ Orta Kalite' : '❌ Yetersiz Uyku'
+                  this.summary.score >= 85 ? '🌟 Excellent Sleep' :
+                  this.summary.score >= 70 ? '✅ Good Sleep' :
+                  this.summary.score >= 55 ? '⚠️ Fair Quality' : '❌ Poor Sleep'
                 )
                   .fontSize(12)
                   .fontColor(this.getScoreColor(this.summary.score))
@@ -282,7 +282,7 @@ struct SleepTracker {
             .backgroundColor('#0D0D1A')
             .borderRadius(16)
 
-            // Mini İstatistikler
+            // Mini Statistics
             Row({ space: 8 }) {
               Column() {
                 Text('🔄')
@@ -291,7 +291,7 @@ struct SleepTracker {
                   .fontSize(16)
                   .fontColor('#FFA500')
                   .fontWeight(FontWeight.Bold)
-                Text('uyanma')
+                Text('awakenings')
                   .fontSize(9)
                   .fontColor('#666666')
               }
@@ -308,7 +308,7 @@ struct SleepTracker {
                   .fontSize(16)
                   .fontColor('#7B68EE')
                   .fontWeight(FontWeight.Bold)
-                Text('dinlendirici')
+                Text('restful')
                   .fontSize(9)
                   .fontColor('#666666')
               }
@@ -325,7 +325,7 @@ struct SleepTracker {
                   .fontSize(14)
                   .fontColor('#4FC3F7')
                   .fontWeight(FontWeight.Bold)
-                Text('hedef yatış')
+                Text('target bed')
                   .fontSize(9)
                   .fontColor('#666666')
               }
@@ -336,16 +336,16 @@ struct SleepTracker {
               .alignItems(HorizontalAlign.Center)
             }
 
-            // Uyku Evresi Dağılımı
+            // Sleep Phase Distribution
             Column() {
-              Text('Uyku Evreleri')
+              Text('Sleep Phases')
                 .fontSize(11)
                 .fontColor('#AAAAAA')
                 .width('100%')
                 .textAlign(TextAlign.Start)
                 .margin({ bottom: 10 })
 
-              // Yatay çubuk grafik
+              // Horizontal bar chart
               Row() {
                 ForEach(this.phases, (phase: SleepPhase) => {
                   Column()
@@ -361,7 +361,7 @@ struct SleepTracker {
               .clip(true)
               .margin({ bottom: 10 })
 
-              // Evre Listesi
+              // Phase List
               ForEach(this.phases, (phase: SleepPhase) => {
                 Row() {
                   Row()
@@ -398,20 +398,20 @@ struct SleepTracker {
             .borderRadius(12)
 
           } else if (this.selectedTab === 1) {
-            // ════════════════════════════════════════════════════════
-            // SEKME 2: GEÇMİŞ
-            // ════════════════════════════════════════════════════════
+            // ════════════════════════════════════════════════════
+            // TAB 2: HISTORY
+            // ════════════════════════════════════════════════════
 
-            // 7 Gün Özet
+            // 7-Day Summary
             Column() {
-              Text('Son 7 Gece')
+              Text('Last 7 Nights')
                 .fontSize(11)
                 .fontColor('#AAAAAA')
                 .width('100%')
                 .textAlign(TextAlign.Start)
                 .margin({ bottom: 10 })
 
-              // Skor Çubukları
+              // Score Bars
               Row({ space: 4 }) {
                 ForEach(this.weekHistory, (record: NightRecord) => {
                   Column() {
@@ -440,14 +440,14 @@ struct SleepTracker {
             .backgroundColor('#111111')
             .borderRadius(12)
 
-            // Günlük Kayıt Listesi
+            // Daily Record List
             ForEach(this.weekHistory.slice().reverse(), (record: NightRecord) => {
               Row() {
                 Column() {
                   Text(record.date)
                     .fontSize(12)
                     .fontColor('#CCCCCC')
-                  Text(`${record.totalHours}s uyku`)
+                  Text(`${record.totalHours}h sleep`)
                     .fontSize(10)
                     .fontColor('#888888')
                 }
@@ -472,49 +472,49 @@ struct SleepTracker {
             })
 
           } else {
-            // ════════════════════════════════════════════════════════
-            // SEKME 3: ÖNERİLER
-            // ════════════════════════════════════════════════════════
+            // ════════════════════════════════════════════════════
+            // TAB 3: TIPS
+            // ════════════════════════════════════════════════════
 
             this.SleepTip(
               '💤',
-              'Daha Fazla Derin Uyku',
-              'Derin uyku süreniz hedefin altında. Yatmadan önce ekran kullanımını azaltın.',
+              'More Deep Sleep',
+              'Your deep sleep duration is below target. Reduce screen usage before bed.',
               '#1A237E'
             )
 
             this.SleepTip(
               '⏰',
-              'Tutarlı Uyku Saati',
-              'Her gece aynı saatte uyumaya çalışın. Biyolojik saatinizi düzenler.',
+              'Consistent Sleep Schedule',
+              'Try to sleep at the same time every night. It regulates your biological clock.',
               '#7B68EE'
             )
 
             this.SleepTip(
               '🌡️',
-              'Uyku Ortamı',
-              'Yatak odası sıcaklığını 18-20°C arasında tutun. Serin oda derin uykuyu artırır.',
+              'Sleep Environment',
+              'Keep your bedroom temperature between 18–20°C. A cool room promotes deep sleep.',
               '#0288D1'
             )
 
             this.SleepTip(
               '🏃',
-              'Egzersiz Zamanlaması',
-              'Uykudan 3 saat önce yoğun egzersiz yapmayın. Bu uyku kalitesini düşürebilir.',
+              'Exercise Timing',
+              'Avoid intense exercise within 3 hours of bedtime. It can reduce sleep quality.',
               '#00695C'
             )
 
             this.SleepTip(
               '☕',
-              'Kafein Alımı',
-              'Öğleden sonra kafein tüketimini sınırlayın. Kafein etkisi 6 saat sürebilir.',
+              'Caffeine Intake',
+              'Limit caffeine consumption in the afternoon. Caffeine effects can last 6 hours.',
               '#E65100'
             )
 
             this.SleepTip(
               '📱',
-              'Ekran Süresi',
-              'Yatmadan 1 saat önce mavi ışık filtresini etkinleştirin veya ekranı kapatın.',
+              'Screen Time',
+              'Enable blue light filter or turn off screens 1 hour before bed.',
               '#6A1B9A'
             )
           }
@@ -531,7 +531,7 @@ struct SleepTracker {
   }
 
   /**
-   * Uyku önerisi kartı oluştur
+   * Build a sleep tip card
    */
   @Builder
   SleepTip(icon: string, title: string, description: string, accentColor: string) {

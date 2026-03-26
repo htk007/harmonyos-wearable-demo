@@ -1,25 +1,25 @@
 /**
- * Index.ets - Ana Dashboard Sayfası
+ * Index.ets - Main Dashboard Page
  *
- * HarmonyOS Wearable Sağlık Takip Uygulaması ana ekranı.
- * Adım sayar, kalp atışı ve uyku analizi özelliklerine
- * tab navigasyonu ile erişim sağlar.
+ * Entry screen for the HarmonyOS Wearable Health Tracking App.
+ * Provides tab-based navigation to step counter, heart rate,
+ * and sleep analysis features.
  *
- * Wearable ekran boyutu: 466x466 px (yuvarlak) varsayımıyla tasarlanmıştır.
+ * Designed for wearable screen size: 466x466 px (round) assumed.
  */
 
 import router from '@ohos.router'
 import { HealthCard } from '../components/HealthCard'
 import { RingProgress } from '../components/RingProgress'
 
-// Sekme tanımları
+// Tab item definition
 interface TabItem {
   label: string
   icon: string
   route: string
 }
 
-// Anlık sağlık özeti verisi
+// Instant health summary data
 interface HealthSummary {
   steps: number
   stepGoal: number
@@ -32,10 +32,10 @@ interface HealthSummary {
 @Entry
 @Component
 struct Index {
-  // Aktif sekme indeksi
+  // Active tab index
   @State private activeTab: number = 0
 
-  // Sağlık özeti verileri (mock)
+  // Health summary data (mock)
   @State private healthSummary: HealthSummary = {
     steps: 7842,
     stepGoal: 10000,
@@ -45,43 +45,43 @@ struct Index {
     distance: 5.8
   }
 
-  // Yükleniyor durumu
+  // Loading state
   @State private isLoading: boolean = true
 
-  // Mevcut saat
+  // Current time
   @State private currentTime: string = ''
 
-  // Zamanlayıcı kimliği
+  // Timer ID
   private timerId: number = -1
 
-  // Tab konfigürasyonu
+  // Tab configuration
   private tabs: TabItem[] = [
-    { label: 'Özet', icon: '❤', route: '' },
-    { label: 'Adım', icon: '👟', route: 'pages/StepCounter' },
-    { label: 'Kalp', icon: '💓', route: 'pages/HeartRate' },
-    { label: 'Uyku', icon: '🌙', route: 'pages/SleepTracker' }
+    { label: 'Summary', icon: '❤', route: '' },
+    { label: 'Steps', icon: '👟', route: 'pages/StepCounter' },
+    { label: 'Heart', icon: '💓', route: 'pages/HeartRate' },
+    { label: 'Sleep', icon: '🌙', route: 'pages/SleepTracker' }
   ]
 
   /**
-   * Bileşen oluşturulduğunda çalışır.
-   * Saat güncellemesini ve mock veri simülasyonunu başlatır.
+   * Called when the component is created.
+   * Starts clock updates and mock data simulation.
    */
   aboutToAppear() {
     this.updateTime()
     this.startMockDataSimulation()
-    // 1 saniye aralıklarla saati güncelle
+    // Update clock every second
     this.timerId = setInterval(() => {
       this.updateTime()
     }, 1000)
 
-    // Yükleme simülasyonu
+    // Loading simulation
     setTimeout(() => {
       this.isLoading = false
     }, 800)
   }
 
   /**
-   * Bileşen yok edildiğinde zamanlayıcıyı temizle
+   * Clear timer when component is destroyed
    */
   aboutToDisappear() {
     if (this.timerId !== -1) {
@@ -90,7 +90,7 @@ struct Index {
   }
 
   /**
-   * Geçerli saati HH:MM formatında günceller
+   * Updates the current time in HH:MM format
    */
   private updateTime() {
     const now = new Date()
@@ -100,55 +100,55 @@ struct Index {
   }
 
   /**
-   * Mock veri simülasyonu - gerçek sensör verisini taklit eder
-   * Her 3 saniyede bir kalp atışını hafifçe değiştirir
+   * Mock data simulation - mimics real sensor data
+   * Updates heart rate slightly every 3 seconds
    */
   private startMockDataSimulation() {
     setInterval(() => {
-      // Kalp atışını ±2 BPM aralığında simüle et
+      // Simulate heart rate with ±2 BPM variation
       const variation = Math.floor(Math.random() * 5) - 2
       this.healthSummary = {
         ...this.healthSummary,
         heartRate: Math.max(55, Math.min(110, this.healthSummary.heartRate + variation)),
-        // Adımları yavaşça artır
+        // Gradually increase step count
         steps: Math.min(this.healthSummary.stepGoal, this.healthSummary.steps + Math.floor(Math.random() * 3))
       }
     }, 3000)
   }
 
   /**
-   * Adım tamamlanma yüzdesini hesaplar
+   * Calculates step completion percentage
    */
   private getStepProgress(): number {
     return this.healthSummary.steps / this.healthSummary.stepGoal
   }
 
   /**
-   * Kalp atışı durumuna göre renk döndürür
+   * Returns color based on heart rate status
    */
   private getHeartRateColor(): string {
     const bpm = this.healthSummary.heartRate
-    if (bpm > 120) return '#FF4444'  // Taşikardi uyarısı
-    if (bpm > 100) return '#FFA500'  // Yüksek
-    if (bpm < 50) return '#4169E1'   // Düşük
+    if (bpm > 120) return '#FF4444'  // Tachycardia warning
+    if (bpm > 100) return '#FFA500'  // High
+    if (bpm < 50) return '#4169E1'   // Low
     return '#00C853'                  // Normal
   }
 
   /**
-   * Belirtilen rotaya yönlendir
+   * Navigate to the specified route
    */
   private navigateTo(route: string) {
     if (route) {
       router.pushUrl({ url: route })
         .catch((err: Error) => {
-          console.error(`[Index] Navigasyon hatası: ${err.message}`)
+          console.error(`[Index] Navigation error: ${err.message}`)
         })
     }
   }
 
   build() {
     Column() {
-      // ── Üst Durum Çubuğu ──────────────────────────────────────────
+      // ── Status Bar ─────────────────────────────────────────────
       Row() {
         Text(this.currentTime)
           .fontSize(14)
@@ -157,7 +157,7 @@ struct Index {
 
         Blank()
 
-        // Batarya göstergesi (mock)
+        // Battery indicator (mock)
         Row() {
           Text('78%')
             .fontSize(11)
@@ -170,13 +170,13 @@ struct Index {
       .padding({ left: 16, right: 16, top: 8, bottom: 4 })
 
       if (this.isLoading) {
-        // ── Yükleme Ekranı ──────────────────────────────────────────
+        // ── Loading Screen ─────────────────────────────────────
         Column() {
           LoadingProgress()
             .width(40)
             .height(40)
             .color('#00C853')
-          Text('Sağlık verileri yükleniyor...')
+          Text('Loading health data...')
             .fontSize(12)
             .fontColor('#888888')
             .margin({ top: 12 })
@@ -187,11 +187,11 @@ struct Index {
         .alignItems(HorizontalAlign.Center)
 
       } else {
-        // ── Ana İçerik ───────────────────────────────────────────────
+        // ── Main Content ────────────────────────────────────────
         Scroll() {
           Column({ space: 12 }) {
 
-            // Ana Halka Progress (Adım Sayar)
+            // Main Ring Progress (Step Counter)
             Column() {
               RingProgress({
                 progress: this.getStepProgress(),
@@ -205,14 +205,14 @@ struct Index {
                       .fontSize(22)
                       .fontColor('#FFFFFF')
                       .fontWeight(FontWeight.Bold)
-                    Text('adım')
+                    Text('steps')
                       .fontSize(10)
                       .fontColor('#888888')
                   }
                 }
               })
 
-              Text(`Hedef: ${this.healthSummary.stepGoal.toLocaleString()} adım`)
+              Text(`Goal: ${this.healthSummary.stepGoal.toLocaleString()} steps`)
                 .fontSize(11)
                 .fontColor('#888888')
                 .margin({ top: 6 })
@@ -220,10 +220,10 @@ struct Index {
             .alignItems(HorizontalAlign.Center)
             .padding({ top: 8 })
 
-            // ── Sağlık Metrik Kartları ─────────────────────────────
-            // Kalp Atışı Kartı
+            // ── Health Metric Cards ────────────────────────────
+            // Heart Rate Card
             HealthCard({
-              title: 'Kalp Atışı',
+              title: 'Heart Rate',
               value: this.healthSummary.heartRate.toString(),
               unit: 'BPM',
               iconName: '💓',
@@ -232,20 +232,20 @@ struct Index {
               onClick: () => this.navigateTo('pages/HeartRate')
             })
 
-            // Adım Kartı
+            // Steps Card
             HealthCard({
-              title: 'Bugünkü Adımlar',
+              title: "Today's Steps",
               value: this.healthSummary.steps.toLocaleString(),
-              unit: 'adım',
+              unit: 'steps',
               iconName: '👟',
               trend: 'up',
               accentColor: '#00C853',
               onClick: () => this.navigateTo('pages/StepCounter')
             })
 
-            // Kalori Kartı
+            // Calories Card
             HealthCard({
-              title: 'Yakılan Kalori',
+              title: 'Calories Burned',
               value: this.healthSummary.calories.toString(),
               unit: 'kcal',
               iconName: '🔥',
@@ -254,9 +254,9 @@ struct Index {
               onClick: () => this.navigateTo('pages/StepCounter')
             })
 
-            // Uyku Skoru Kartı
+            // Sleep Score Card
             HealthCard({
-              title: 'Uyku Skoru',
+              title: 'Sleep Score',
               value: this.healthSummary.sleepScore.toString(),
               unit: '/ 100',
               iconName: '🌙',
@@ -265,9 +265,9 @@ struct Index {
               onClick: () => this.navigateTo('pages/SleepTracker')
             })
 
-            // Mesafe Kartı
+            // Distance Card
             HealthCard({
-              title: 'Mesafe',
+              title: 'Distance',
               value: this.healthSummary.distance.toFixed(1),
               unit: 'km',
               iconName: '📍',
@@ -284,7 +284,7 @@ struct Index {
         .edgeEffect(EdgeEffect.Spring)
       }
 
-      // ── Alt Tab Navigasyon ────────────────────────────────────────
+      // ── Bottom Tab Navigation ──────────────────────────────────
       Row() {
         ForEach(this.tabs, (tab: TabItem, index: number) => {
           Column() {

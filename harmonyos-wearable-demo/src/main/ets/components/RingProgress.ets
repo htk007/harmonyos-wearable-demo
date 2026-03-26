@@ -1,59 +1,59 @@
 /**
- * RingProgress.ets - Dairesel İlerleme Çubuğu Bileşeni
+ * RingProgress.ets - Circular Progress Bar Component
  *
- * Wearable ekranına uygun, özelleştirilebilir yuvarlak progress göstergesi.
- * Canvas API ile çizilir, merkeze özel içerik yerleştirilebilir.
+ * A customizable circular progress indicator suitable for wearable screens.
+ * Drawn using the Canvas API, with support for custom center content.
  *
- * Kullanım:
+ * Usage:
  * RingProgress({
- *   progress: 0.75,      // 0.0 - 1.0 arası
- *   size: 120,           // Piksel cinsinden boyut
- *   strokeWidth: 10,     // Çizgi kalınlığı
+ *   progress: 0.75,      // 0.0 - 1.0
+ *   size: 120,           // Size in pixels
+ *   strokeWidth: 10,     // Line thickness
  *   activeColor: '#00C853',
  *   backgroundColor: '#1A3A1A',
- *   centerContent: () => { Text('75%') }  // İsteğe bağlı merkez içerik
+ *   centerContent: () => { Text('75%') }  // Optional center content
  * })
  */
 
 /**
- * RingProgress bileşeni
- * Canvas 2D API ile özel dairesel progress çizer.
+ * RingProgress component
+ * Draws a custom circular progress ring using Canvas 2D API.
  */
 @Component
 export struct RingProgress {
-  // İlerleme değeri (0.0 - 1.0)
+  // Progress value (0.0 - 1.0)
   @Prop progress: number = 0.0
 
-  // Bileşen boyutu (px)
+  // Component size (px)
   @Prop size: number = 120
 
-  // Halka çizgisi kalınlığı (px)
+  // Ring stroke thickness (px)
   @Prop strokeWidth: number = 10
 
-  // Aktif kısım rengi
+  // Active segment color
   @Prop activeColor: string = '#00C853'
 
-  // Arka plan halka rengi
+  // Background ring color
   @Prop backgroundColor: string = '#1A3A1A'
 
-  // Merkeze yerleştirilecek özel içerik oluşturucu
+  // Custom content builder for the center area
   @BuilderParam centerContent: () => void = () => {}
 
   // Canvas rendering context
   private settings: RenderingContextSettings = new RenderingContextSettings(true)
   private context: CanvasRenderingContext2D = new CanvasRenderingContext2D(this.settings)
 
-  // Animasyon için görüntülenen progress değeri
+  // Animated progress value
   @State private displayProgress: number = 0.0
 
-  // Animasyon zamanlayıcısı
+  // Animation timer
   private animTimer: number = -1
 
   /**
-   * Başlangıçta progress animasyonunu başlat
+   * Start progress animation on mount
    */
   aboutToAppear() {
-    // 0'dan hedef değere animasyonlu geçiş
+    // Animate from 0 to target value
     const target = Math.max(0, Math.min(1, this.progress))
     const duration = 600 // ms
     const steps = 30
@@ -79,7 +79,7 @@ export struct RingProgress {
   }
 
   /**
-   * Progress değeri değiştiğinde yeniden çiz
+   * Redraw when progress value changes
    */
   onProgressChange() {
     this.displayProgress = Math.max(0, Math.min(1, this.progress))
@@ -87,26 +87,26 @@ export struct RingProgress {
   }
 
   /**
-   * Canvas'a dairesel progress halkasını çizer.
+   * Draws the circular progress ring on canvas.
    *
-   * Algoritma:
-   * 1. Arka plan halkası: tam daire (0 - 2π)
-   * 2. Aktif halka: -π/2'den başlayarak progress * 2π kadar çiz
-   * 3. Gradient veya düz renk uygula
-   * 4. Yuvarlatılmış uçlar için lineCap = 'round'
+   * Algorithm:
+   * 1. Background ring: full circle (0 - 2π)
+   * 2. Active ring: draw from -π/2 by progress * 2π
+   * 3. Apply color
+   * 4. lineCap = 'round' for rounded ends
    */
   private drawRing() {
     const ctx = this.context
     const size = this.size
-    const cx = size / 2   // Merkez X
-    const cy = size / 2   // Merkez Y
+    const cx = size / 2   // Center X
+    const cy = size / 2   // Center Y
     const radius = (size - this.strokeWidth) / 2
-    const startAngle = -Math.PI / 2  // 12 o'clock konumu
+    const startAngle = -Math.PI / 2  // 12 o'clock position
 
-    // Canvas'ı temizle
+    // Clear canvas
     ctx.clearRect(0, 0, size, size)
 
-    // ── Arka Plan Halkası ────────────────────────────────────────
+    // ── Background Ring ──────────────────────────────────────────
     ctx.beginPath()
     ctx.arc(cx, cy, radius, 0, 2 * Math.PI)
     ctx.strokeStyle = this.backgroundColor
@@ -114,7 +114,7 @@ export struct RingProgress {
     ctx.lineCap = 'round'
     ctx.stroke()
 
-    // ── Aktif Progress Halkası ───────────────────────────────────
+    // ── Active Progress Ring ─────────────────────────────────────
     if (this.displayProgress > 0) {
       const endAngle = startAngle + (2 * Math.PI * this.displayProgress)
 
@@ -125,7 +125,7 @@ export struct RingProgress {
       ctx.lineCap = 'round'
       ctx.stroke()
 
-      // %100 tamamlandığında altın ışıltı efekti
+      // Gold glow effect when 100% complete
       if (this.displayProgress >= 0.99) {
         ctx.beginPath()
         ctx.arc(cx, cy, radius, startAngle, 2 * Math.PI + startAngle)
@@ -137,7 +137,7 @@ export struct RingProgress {
       }
     }
 
-    // ── Başlangıç Noktası Glow Efekti ────────────────────────────
+    // ── Start Point Glow Effect ──────────────────────────────────
     if (this.displayProgress > 0.02) {
       const dotX = cx + radius * Math.cos(startAngle)
       const dotY = cy + radius * Math.sin(startAngle)
@@ -151,7 +151,7 @@ export struct RingProgress {
 
   build() {
     Stack({ alignContent: Alignment.Center }) {
-      // Canvas katmanı - halkaları çizer
+      // Canvas layer - draws the rings
       Canvas(this.context)
         .width(this.size)
         .height(this.size)
@@ -159,7 +159,7 @@ export struct RingProgress {
           this.drawRing()
         })
 
-      // Merkez içerik katmanı
+      // Center content layer
       Column() {
         this.centerContent()
       }
@@ -174,25 +174,25 @@ export struct RingProgress {
 }
 
 /**
- * MiniRingProgress - Kompakt versiyon (kartlar içinde kullanım için)
+ * MiniRingProgress - Compact version (for use inside cards)
  *
- * Daha küçük, merkez içeriksiz dairesel progress göstergesi.
+ * Smaller circular progress indicator without center content.
  */
 @Component
 export struct MiniRingProgress {
-  // İlerleme değeri (0.0 - 1.0)
+  // Progress value (0.0 - 1.0)
   @Prop progress: number = 0.0
 
-  // Boyut (px) - varsayılan: 40px
+  // Size (px) - default: 40px
   @Prop size: number = 40
 
-  // Çizgi kalınlığı
+  // Stroke thickness
   @Prop strokeWidth: number = 5
 
-  // Aktif renk
+  // Active color
   @Prop activeColor: string = '#00C853'
 
-  // Arka plan rengi
+  // Background color
   @Prop backgroundColor: string = '#1A3A1A'
 
   private settings: RenderingContextSettings = new RenderingContextSettings(true)
@@ -207,14 +207,14 @@ export struct MiniRingProgress {
 
     ctx.clearRect(0, 0, size, size)
 
-    // Arka plan
+    // Background
     ctx.beginPath()
     ctx.arc(cx, cy, radius, 0, 2 * Math.PI)
     ctx.strokeStyle = this.backgroundColor
     ctx.lineWidth = this.strokeWidth
     ctx.stroke()
 
-    // Aktif kısım
+    // Active segment
     if (this.progress > 0) {
       const startAngle = -Math.PI / 2
       const endAngle = startAngle + (2 * Math.PI * Math.min(1, this.progress))

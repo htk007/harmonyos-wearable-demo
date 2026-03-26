@@ -1,75 +1,70 @@
 # HarmonyOS Wearable API Cheatsheet
 
-> **TR:** Bu cheatsheet, HarmonyOS wearable uygulama geliştirirken en sık kullanılan API'leri, dekoratörleri ve bileşenleri hızlı referans için derler.
->
-> **EN:** This cheatsheet compiles the most commonly used APIs, decorators, and components for HarmonyOS wearable development as a quick reference.
+> This cheatsheet compiles the most commonly used APIs, decorators, and components for HarmonyOS wearable development as a quick reference.
 
 ---
 
-## İçindekiler / Table of Contents
+## Table of Contents
 
-1. [ArkUI Dekoratörler / ArkUI Decorators](#1-arkui-dekoratörler--arkui-decorators)
-2. [Temel Layout Bileşenleri / Core Layout Components](#2-temel-layout-bileşenleri--core-layout-components)
-3. [Sensör API'leri / Sensor APIs](#3-sensör-apileri--sensor-apis)
-4. [Health Kit API'leri / Health Kit APIs](#4-health-kit-apileri--health-kit-apis)
-5. [Distributed Data / Dağıtık Veri](#5-distributed-data--dağıtık-veri)
-6. [İzinler / Permissions](#6-i̇zinler--permissions)
-7. [Wearable-Özel UI / Wearable-Specific UI](#7-wearable-özel-ui--wearable-specific-ui)
-8. [Lifecycle / Yaşam Döngüsü](#8-lifecycle--yaşam-döngüsü)
+1. [ArkUI Decorators](#1-arkui-decorators)
+2. [Core Layout Components](#2-core-layout-components)
+3. [Sensor APIs](#3-sensor-apis)
+4. [Health Kit APIs](#4-health-kit-apis)
+5. [Distributed Data](#5-distributed-data)
+6. [Permissions](#6-permissions)
+7. [Wearable-Specific UI](#7-wearable-specific-ui)
+8. [Lifecycle](#8-lifecycle)
 
 ---
 
-## 1. ArkUI Dekoratörler / ArkUI Decorators
+## 1. ArkUI Decorators
 
-**TR:** ArkUI dekoratörleri, bileşen davranışını ve state yönetimini tanımlar. Doğru dekoratörü seçmek, reaktif ve verimli UI geliştirmenin temelidir.
+ArkUI decorators define component behavior and state management. Choosing the right decorator is fundamental to reactive and efficient UI development.
 
-**EN:** ArkUI decorators define component behavior and state management. Choosing the right decorator is fundamental to reactive and efficient UI development.
+### Decorator Reference Table
 
-### Dekoratör Referans Tablosu / Decorator Reference Table
+| Decorator | Scope | Description |
+|---|---|---|
+| `@Entry` | Page | Single entry point in an ArkTS file |
+| `@Component` | Struct | Defines a reusable UI component |
+| `@State` | Component | Component-local reactive state; UI updates on change |
+| `@Prop` | Component | One-way data flow from parent (read-only copy) |
+| `@Link` | Component | Two-way binding with parent |
+| `@Observed` + `@ObjectLink` | Object | Tracks changes in complex objects |
+| `@Provide` + `@Consume` | Tree | Share data deep across the component tree |
+| `@Builder` | Function | Defines reusable UI blocks |
+| `@Styles` | Style | Groups common style properties |
+| `@Extend` | Style | Extends existing component styles |
+| `@Watch` | State | Listens to state changes |
+| `@StorageLink` | App | Two-way binding with AppStorage |
+| `@LocalStorageLink` | Page | Two-way binding with LocalStorage |
 
-| Dekoratör / Decorator | Kapsam / Scope | Açıklama (TR) | Description (EN) |
-|---|---|---|---|
-| `@Entry` | Sayfa / Page | Bir ArkTS dosyasında tek giriş noktası | Single entry point in an ArkTS file |
-| `@Component` | Struct | Yeniden kullanılabilir UI bileşeni tanımlar | Defines a reusable UI component |
-| `@State` | Bileşen / Component | Bileşene özel reaktif state; değişince UI güncellenir | Component-local reactive state; UI updates on change |
-| `@Prop` | Bileşen / Component | Ebeveynden tek yönlü veri akışı (salt okunur kopya) | One-way data flow from parent (read-only copy) |
-| `@Link` | Bileşen / Component | Ebeveyn ile çift yönlü bağ | Two-way binding with parent |
-| `@Observed` + `@ObjectLink` | Nesne / Object | Karmaşık nesne değişikliklerini izler | Tracks changes in complex objects |
-| `@Provide` + `@Consume` | Ağaç / Tree | Derinlemesine bileşen ağacı arasında veri paylaşımı | Share data deep across the component tree |
-| `@Builder` | Fonksiyon / Function | Tekrar kullanılabilir UI blokları tanımlar | Defines reusable UI blocks |
-| `@Styles` | Stil / Style | Ortak stil özelliklerini gruplar | Groups common style properties |
-| `@Extend` | Stil / Style | Mevcut bileşen stillerini genişletir | Extends existing component styles |
-| `@Watch` | State | State değişikliğini dinler | Listens to state changes |
-| `@StorageLink` | Uygulama / App | AppStorage ile iki yönlü bağ | Two-way binding with AppStorage |
-| `@LocalStorageLink` | Sayfa / Page | LocalStorage ile iki yönlü bağ | Two-way binding with LocalStorage |
-
-### @State — Bileşen İçi State
+### @State — Component-Local State
 
 ```typescript
 @Entry
 @Component
 struct StateDemo {
-  // Primitive state / İlkel state
+  // Primitive state
   @State count: number = 0;
-  @State label: string = 'Merhaba / Hello';
+  @State label: string = 'Hello';
   @State isVisible: boolean = true;
 
-  // Nesne state'i — nesne referansı değişmeli / Object state — object reference must change
+  // Object state — object reference must change
   @State userInfo: { name: string; age: number } = { name: 'Ali', age: 28 };
 
-  // Dizi state'i / Array state
+  // Array state
   @State items: string[] = ['Item 1', 'Item 2'];
 
   build() {
     Column({ space: 8 }) {
       Text(`Count: ${this.count}`).fontSize(16).fontColor('#FFFFFF')
-      Button('Artır / Increment')
+      Button('Increment')
         .onClick(() => { this.count++; })
         .height(44)
 
-      // Nesneyi güncellemek için yeni referans ata
       // Assign a new reference to update an object
-      Button('Güncelle / Update User')
+      Button('Update User')
         .onClick(() => {
           this.userInfo = { ...this.userInfo, age: this.userInfo.age + 1 };
         })
@@ -81,27 +76,27 @@ struct StateDemo {
 }
 ```
 
-### @Prop ve @Link — Ebeveyn-Çocuk İletişimi / Parent-Child Communication
+### @Prop and @Link — Parent-Child Communication
 
 ```typescript
-// Çocuk bileşeni / Child component
+// Child component
 @Component
 struct ChildProp {
-  @Prop value: number = 0;           // Tek yönlü / One-way
-  @Link sharedValue: number;         // Çift yönlü / Two-way
+  @Prop value: number = 0;           // One-way
+  @Link sharedValue: number;         // Two-way
 
   build() {
     Column({ space: 6 }) {
-      Text(`Prop (tek yön): ${this.value}`).fontColor('#AAAAAA').fontSize(13)
-      Text(`Link (çift yön): ${this.sharedValue}`).fontColor('#4CAF50').fontSize(13)
-      Button('Link\'i Artır / Increment Link')
+      Text(`Prop (one-way): ${this.value}`).fontColor('#AAAAAA').fontSize(13)
+      Text(`Link (two-way): ${this.sharedValue}`).fontColor('#4CAF50').fontSize(13)
+      Button('Increment Link')
         .height(36).fontSize(12)
-        .onClick(() => { this.sharedValue++; }) // Ebeveyni de günceller / Also updates parent
+        .onClick(() => { this.sharedValue++; }) // Also updates parent
     }
   }
 }
 
-// Ebeveyn bileşeni / Parent component
+// Parent component
 @Entry
 @Component
 struct ParentComponent {
@@ -110,12 +105,12 @@ struct ParentComponent {
 
   build() {
     Column({ space: 10 }) {
-      Text(`Ebeveyn / Parent: ${this.parentCount}`).fontColor('#FFFFFF').fontSize(16)
-      Text(`Paylaşılan / Shared: ${this.sharedCount}`).fontColor('#FFFFFF').fontSize(16)
+      Text(`Parent: ${this.parentCount}`).fontColor('#FFFFFF').fontSize(16)
+      Text(`Shared: ${this.sharedCount}`).fontColor('#FFFFFF').fontSize(16)
 
       ChildProp({
         value: this.parentCount,
-        sharedValue: $sharedCount   // $ ile referans geçir / Pass by reference with $
+        sharedValue: $sharedCount   // Pass by reference with $
       })
     }
     .width('100%').height('100%').backgroundColor('#111111')
@@ -124,7 +119,7 @@ struct ParentComponent {
 }
 ```
 
-### @Builder — Yeniden Kullanılabilir UI Blokları / Reusable UI Blocks
+### @Builder — Reusable UI Blocks
 
 ```typescript
 @Entry
@@ -133,7 +128,7 @@ struct BuilderDemo {
   @State heartRate: number = 72;
   @State steps: number = 6500;
 
-  // Bileşen içi @Builder / Component-scoped @Builder
+  // Component-scoped @Builder
   @Builder
   MetricCard(icon: string, label: string, value: string, color: string) {
     Row({ space: 8 }) {
@@ -152,8 +147,8 @@ struct BuilderDemo {
 
   build() {
     Column({ space: 8 }) {
-      this.MetricCard('❤️', 'Kalp Atışı / HR', `${this.heartRate} bpm`, '#F44336')
-      this.MetricCard('👟', 'Adım / Steps', `${this.steps}`, '#4CAF50')
+      this.MetricCard('❤️', 'Heart Rate', `${this.heartRate} bpm`, '#F44336')
+      this.MetricCard('👟', 'Steps', `${this.steps}`, '#4CAF50')
     }
     .width('100%').height('100%').backgroundColor('#0A0A0A')
     .padding(16)
@@ -162,10 +157,10 @@ struct BuilderDemo {
 }
 ```
 
-### @Styles ve @Extend
+### @Styles and @Extend
 
 ```typescript
-// @Styles — stil grupları / style groups
+// @Styles — style groups
 @Styles
 function darkCard() {
   .backgroundColor('#1E1E1E')
@@ -173,7 +168,7 @@ function darkCard() {
   .padding(12)
 }
 
-// @Extend — bileşen stillerini genişletme / extending component styles
+// @Extend — extending component styles
 @Extend(Text)
 function metricValue() {
   .fontSize(32)
@@ -195,12 +190,12 @@ struct StylesDemo {
   build() {
     Column({ space: 10 }) {
       Column() {
-        Text('8,432').metricValue()    // @Extend kullanımı / @Extend usage
-        Text('Adım / Steps').fontSize(12).fontColor('#888888')
+        Text('8,432').metricValue()    // @Extend usage
+        Text('Steps').fontSize(12).fontColor('#888888')
       }
-      .darkCard()                       // @Styles kullanımı / @Styles usage
+      .darkCard()                       // @Styles usage
 
-      Button('Başlat / Start').primaryBtn()
+      Button('Start').primaryBtn()
     }
     .width('100%').height('100%').backgroundColor('#000000')
     .alignItems(HorizontalAlign.Center).justifyContent(FlexAlign.Center)
@@ -208,7 +203,7 @@ struct StylesDemo {
 }
 ```
 
-### @Watch — State Değişikliğini Dinleme / Listening to State Changes
+### @Watch — Listening to State Changes
 
 ```typescript
 @Entry
@@ -219,8 +214,8 @@ struct WatchDemo {
   onHeartRateChange(propName: string): void {
     // propName = 'heartRate'
     if (this.heartRate > 120) {
-      console.warn(`[Watch] Yüksek nabız / High HR: ${this.heartRate}`);
-      // Titreşim gibi bir uyarı tetikle / Trigger an alert like vibration
+      console.warn(`[Watch] High HR: ${this.heartRate}`);
+      // Trigger an alert like vibration
     }
   }
 
@@ -236,24 +231,22 @@ struct WatchDemo {
 
 ---
 
-## 2. Temel Layout Bileşenleri / Core Layout Components
+## 2. Core Layout Components
 
-**TR:** ArkUI layout bileşenleri, ekranda öğelerin nasıl konumlandırıldığını belirler.
+ArkUI layout components determine how elements are positioned on screen.
 
-**EN:** ArkUI layout components determine how elements are positioned on screen.
+### Layout Reference Table
 
-### Layout Referans Tablosu / Layout Reference Table
-
-| Bileşen / Component | Yön / Direction | Temel Özellikler / Key Props | Kullanım / Use Case |
+| Component | Direction | Key Props | Use Case |
 |---|---|---|---|
-| `Column` | Dikey / Vertical | `space`, `alignItems`, `justifyContent` | Dikey liste, form / Vertical list, form |
-| `Row` | Yatay / Horizontal | `space`, `alignItems`, `justifyContent` | Yatay liste, toolbar / Horizontal list, toolbar |
-| `Stack` | Üst üste / Overlapping | `alignContent` | Arka plan, overlay / Background, overlay |
-| `Flex` | Esnek / Flexible | `direction`, `wrap`, `justifyContent`, `alignItems` | Dinamik düzen / Dynamic layout |
-| `List` | Kaydırılabilir / Scrollable | `space`, `divider`, `lanes` | Uzun veri listeleri / Long data lists |
-| `Grid` | Izgara / Grid | `columnsTemplate`, `rowsTemplate`, `columnsGap` | Uygulama ızgarası / App grid |
-| `Scroll` | Kaydırma / Scroll | `scrollable`, `scrollBar` | Özel kaydırma / Custom scrolling |
-| `Swiper` | Slayt / Slide | `index`, `autoPlay`, `loop` | Onboarding, sayfalar / Onboarding, pages |
+| `Column` | Vertical | `space`, `alignItems`, `justifyContent` | Vertical list, form |
+| `Row` | Horizontal | `space`, `alignItems`, `justifyContent` | Horizontal list, toolbar |
+| `Stack` | Overlapping | `alignContent` | Background, overlay |
+| `Flex` | Flexible | `direction`, `wrap`, `justifyContent`, `alignItems` | Dynamic layout |
+| `List` | Scrollable | `space`, `divider`, `lanes` | Long data lists |
+| `Grid` | Grid | `columnsTemplate`, `rowsTemplate`, `columnsGap` | App grid |
+| `Scroll` | Scroll | `scrollable`, `scrollBar` | Custom scrolling |
+| `Swiper` | Slide | `index`, `autoPlay`, `loop` | Onboarding, pages |
 
 ### Column & Row
 
@@ -262,14 +255,14 @@ struct WatchDemo {
 @Component
 struct ColumnRowDemo {
   build() {
-    // Column: dikey / vertical
+    // Column: vertical
     Column({ space: 12 }) {
-      // Row: yatay / horizontal
+      // Row: horizontal
       Row({ space: 8 }) {
-        Text('Öğe 1 / Item 1')
+        Text('Item 1')
           .fontSize(14).fontColor('#FFFFFF')
-          .layoutWeight(1)                // Eşit alan kapla / Take equal space
-        Text('Öğe 2 / Item 2')
+          .layoutWeight(1)                // Take equal space
+        Text('Item 2')
           .fontSize(14).fontColor('#FFFFFF')
           .layoutWeight(1)
       }
@@ -278,8 +271,8 @@ struct ColumnRowDemo {
       .padding({ left: 8, right: 8 })
 
       Column({ space: 4 }) {
-        Text('Başlık / Title').fontSize(18).fontColor('#FFFFFF').fontWeight(FontWeight.Bold)
-        Text('Alt başlık / Subtitle').fontSize(13).fontColor('#888888')
+        Text('Title').fontSize(18).fontColor('#FFFFFF').fontWeight(FontWeight.Bold)
+        Text('Subtitle').fontSize(13).fontColor('#888888')
       }
       .alignItems(HorizontalAlign.Center)
     }
@@ -291,7 +284,7 @@ struct ColumnRowDemo {
 }
 ```
 
-### List — Kaydırılabilir Liste / Scrollable List
+### List — Scrollable List
 
 ```typescript
 interface HealthRecord {
@@ -305,11 +298,11 @@ interface HealthRecord {
 @Component
 struct ListDemo {
   @State records: HealthRecord[] = [
-    { id: 1, type: 'Adım / Steps', value: '8,432', time: '09:00' },
-    { id: 2, type: 'Kalp / HR', value: '72 bpm', time: '09:15' },
-    { id: 3, type: 'Kalori / Cal', value: '342 kcal', time: '10:00' },
-    { id: 4, type: 'Mesafe / Dist', value: '6.2 km', time: '11:00' },
-    { id: 5, type: 'Uyku / Sleep', value: '7.5 saat / h', time: '07:30' },
+    { id: 1, type: 'Steps', value: '8,432', time: '09:00' },
+    { id: 2, type: 'HR', value: '72 bpm', time: '09:15' },
+    { id: 3, type: 'Calories', value: '342 kcal', time: '10:00' },
+    { id: 4, type: 'Distance', value: '6.2 km', time: '11:00' },
+    { id: 5, type: 'Sleep', value: '7.5 h', time: '07:30' },
   ];
 
   build() {
@@ -342,7 +335,7 @@ struct ListDemo {
 }
 ```
 
-### Stack — Üst Üste Katmanlar / Overlapping Layers
+### Stack — Overlapping Layers
 
 ```typescript
 @Entry
@@ -350,17 +343,17 @@ struct ListDemo {
 struct StackDemo {
   build() {
     Stack({ alignContent: Alignment.Center }) {
-      // Arka plan katmanı / Background layer
+      // Background layer
       Circle({ width: 180, height: 180 })
         .fill('#1A1A2E')
 
-      // Orta katman / Middle layer
+      // Middle layer
       Circle({ width: 160, height: 160 })
         .fill('none')
         .stroke('#0A84FF')
         .strokeWidth(4)
 
-      // Üst katman: içerik / Top layer: content
+      // Top layer: content
       Column() {
         Text('72').fontSize(48).fontColor('#FFFFFF').fontWeight(FontWeight.Bold)
         Text('BPM').fontSize(14).fontColor('#0A84FF')
@@ -371,14 +364,14 @@ struct StackDemo {
 }
 ```
 
-### Swiper — Sayfa Kaydırma / Page Swiper
+### Swiper — Page Swiper
 
 ```typescript
 @Entry
 @Component
 struct SwiperDemo {
   @State currentPage: number = 0;
-  private pages: string[] = ['Adım / Steps', 'Kalp / Heart', 'Uyku / Sleep'];
+  private pages: string[] = ['Steps', 'Heart', 'Sleep'];
 
   build() {
     Column() {
@@ -413,39 +406,37 @@ struct SwiperDemo {
 
 ---
 
-## 3. Sensör API'leri / Sensor APIs
+## 3. Sensor APIs
 
-**TR:** `@kit.SensorServiceKit` (veya `@ohos.sensor`) wearable sensörlerine erişim sağlar. Her sensörün kendi izni ve veri formatı vardır.
+`@kit.SensorServiceKit` (or `@ohos.sensor`) provides access to wearable sensors. Each sensor has its own permission and data format.
 
-**EN:** `@kit.SensorServiceKit` (or `@ohos.sensor`) provides access to wearable sensors. Each sensor has its own permission and data format.
+### Sensor Reference Table
 
-### Sensör Referans Tablosu / Sensor Reference Table
-
-| Sensör ID | İzin / Permission | Veri Alanları / Data Fields | Güncelleme Sıklığı / Update Freq |
+| Sensor ID | Permission | Data Fields | Update Freq |
 |---|---|---|---|
-| `sensor.SensorId.PEDOMETER` | `ACTIVITY_MOTION` | `steps: number` | Adım başı / Per step |
-| `sensor.SensorId.HEART_RATE` | `READ_HEALTH_DATA` | `heartRate: number`, `accuracy: number` | ~1 saniye / ~1 second |
-| `sensor.SensorId.ACCELEROMETER` | Yok / None | `x: number`, `y: number`, `z: number` | 100ms - 1s |
-| `sensor.SensorId.GYROSCOPE` | Yok / None | `x: number`, `y: number`, `z: number` | 100ms - 1s |
-| `sensor.SensorId.MAGNETIC_FIELD` | Yok / None | `x: number`, `y: number`, `z: number` | 100ms - 1s |
-| `sensor.SensorId.BAROMETER` | Yok / None | `pressure: number` | 1s |
-| `sensor.SensorId.AMBIENT_LIGHT` | Yok / None | `intensity: number` | 200ms |
-| `sensor.SensorId.ORIENTATION` | Yok / None | `alpha: number`, `beta: number`, `gamma: number` | 100ms |
-| `sensor.SensorId.PEDOMETER_DETECTION` | `ACTIVITY_MOTION` | `scalar: number` (0 veya 1) | Adım algılandığında / On step detect |
-| `sensor.SensorId.SIGNIFICANT_MOTION` | `ACTIVITY_MOTION` | `scalar: number` | Hareket algılandığında / On motion |
+| `sensor.SensorId.PEDOMETER` | `ACTIVITY_MOTION` | `steps: number` | Per step |
+| `sensor.SensorId.HEART_RATE` | `READ_HEALTH_DATA` | `heartRate: number`, `accuracy: number` | ~1 second |
+| `sensor.SensorId.ACCELEROMETER` | None | `x: number`, `y: number`, `z: number` | 100ms - 1s |
+| `sensor.SensorId.GYROSCOPE` | None | `x: number`, `y: number`, `z: number` | 100ms - 1s |
+| `sensor.SensorId.MAGNETIC_FIELD` | None | `x: number`, `y: number`, `z: number` | 100ms - 1s |
+| `sensor.SensorId.BAROMETER` | None | `pressure: number` | 1s |
+| `sensor.SensorId.AMBIENT_LIGHT` | None | `intensity: number` | 200ms |
+| `sensor.SensorId.ORIENTATION` | None | `alpha: number`, `beta: number`, `gamma: number` | 100ms |
+| `sensor.SensorId.PEDOMETER_DETECTION` | `ACTIVITY_MOTION` | `scalar: number` (0 or 1) | On step detect |
+| `sensor.SensorId.SIGNIFICANT_MOTION` | `ACTIVITY_MOTION` | `scalar: number` | On motion |
 
-### Import ve Temel Kullanım / Import and Basic Usage
+### Import and Basic Usage
 
 ```typescript
 import { sensor } from '@kit.SensorServiceKit';
 import { BusinessError } from '@kit.BasicServicesKit';
 
-// Interval seçenekleri / Interval options:
-// 'normal'  = ~200ms  (genel kullanım / general use)
-// 'ui'      = ~60ms   (UI animasyonları / UI animations)
-// 'game'    = ~20ms   (oyun / gaming)
-// 'fastest' = cihaza bağlı / device dependent
-// Ya da nanosaniye cinsinden sayı / Or a number in nanoseconds
+// Interval options:
+// 'normal'  = ~200ms  (general use)
+// 'ui'      = ~60ms   (UI animations)
+// 'game'    = ~20ms   (gaming)
+// 'fastest' = device dependent
+// Or a number in nanoseconds
 ```
 
 ### PEDOMETER
@@ -454,16 +445,16 @@ import { BusinessError } from '@kit.BasicServicesKit';
 import { sensor } from '@kit.SensorServiceKit';
 import { BusinessError } from '@kit.BasicServicesKit';
 
-// Başlat / Start
+// Start
 sensor.on(sensor.SensorId.PEDOMETER, (data: sensor.PedometerResponse) => {
   const steps: number = data.steps;
   console.info(`[Sensor] Steps: ${steps}`);
 }, { interval: 'normal' });
 
-// Durdur / Stop
+// Stop
 sensor.off(sensor.SensorId.PEDOMETER);
 
-// Tek seferlik okuma / One-time reading
+// One-time reading
 sensor.once(sensor.SensorId.PEDOMETER, (data: sensor.PedometerResponse) => {
   console.info(`[Sensor] Current steps: ${data.steps}`);
 });
@@ -490,11 +481,11 @@ sensor.off(sensor.SensorId.HEART_RATE);
 import { sensor } from '@kit.SensorServiceKit';
 
 sensor.on(sensor.SensorId.ACCELEROMETER, (data: sensor.AccelerometerResponse) => {
-  // m/s² cinsinden / in m/s²
+  // in m/s²
   const x: number = data.x;
   const y: number = data.y;
   const z: number = data.z;
-  // Toplam ivme büyüklüğü / Total acceleration magnitude
+  // Total acceleration magnitude
   const magnitude = Math.sqrt(x * x + y * y + z * z);
   console.info(`[Sensor] Accel: ${x.toFixed(2)}, ${y.toFixed(2)}, ${z.toFixed(2)} | Mag: ${magnitude.toFixed(2)}`);
 }, { interval: 100000000 }); // 100ms in ns
@@ -508,7 +499,7 @@ sensor.off(sensor.SensorId.ACCELEROMETER);
 import { sensor } from '@kit.SensorServiceKit';
 
 sensor.on(sensor.SensorId.GYROSCOPE, (data: sensor.GyroscopeResponse) => {
-  // rad/s cinsinden / in rad/s
+  // in rad/s
   const x: number = data.x; // Pitch
   const y: number = data.y; // Roll
   const z: number = data.z; // Yaw
@@ -518,7 +509,7 @@ sensor.on(sensor.SensorId.GYROSCOPE, (data: sensor.GyroscopeResponse) => {
 sensor.off(sensor.SensorId.GYROSCOPE);
 ```
 
-### Hata Yönetimi ile Sensör Başlatma / Sensor Start with Error Handling
+### Sensor Start with Error Handling
 
 ```typescript
 import { sensor } from '@kit.SensorServiceKit';
@@ -534,7 +525,7 @@ function startSensorSafely(
     return true;
   } catch (err) {
     const error = err as BusinessError;
-    // Yaygın hata kodları / Common error codes:
+    // Common error codes:
     // 14500101 = Sensor not supported on this device
     // 14500102 = Permission denied
     // 14500103 = Sensor is already subscribed
@@ -543,7 +534,7 @@ function startSensorSafely(
   }
 }
 
-// Kullanım / Usage
+// Usage
 startSensorSafely(sensor.SensorId.PEDOMETER, (data) => {
   const pedometerData = data as sensor.PedometerResponse;
   console.info(`Steps: ${pedometerData.steps}`);
@@ -552,32 +543,30 @@ startSensorSafely(sensor.SensorId.PEDOMETER, (data) => {
 
 ---
 
-## 4. Health Kit API'leri / Health Kit APIs
+## 4. Health Kit APIs
 
-**TR:** `@ohos.health` modülü (Health Kit), kullanıcının sağlık verilerine standart ve güvenli bir şekilde erişim sağlar. Bu veriler cihaz üzerinde güvenli biçimde saklanır.
+The `@ohos.health` module (Health Kit) provides standardized and secure access to user health data. This data is stored securely on the device.
 
-**EN:** The `@ohos.health` module (Health Kit) provides standardized and secure access to user health data. This data is stored securely on the device.
+### Health Kit Data Types
 
-### Health Kit Veri Tipleri / Health Kit Data Types
+| Data Type | Enum Value | Description |
+|---|---|---|
+| Step count | `HealthDataType.STEP_COUNT` | Daily step count |
+| Calories | `HealthDataType.CALORIES_CONSUMED` | Calories burned |
+| Distance | `HealthDataType.DISTANCE` | Distance walked |
+| Heart rate | `HealthDataType.HEART_RATE` | Instantaneous heart rate |
+| Sleep | `HealthDataType.SLEEP` | Sleep duration and stages |
+| SpO2 | `HealthDataType.OXYGEN_SATURATION` | Blood oxygen saturation |
+| Stress | `HealthDataType.STRESS` | Stress level |
+| Activity | `HealthDataType.EXERCISE` | Exercise sessions |
 
-| Veri Tipi / Data Type | Enum Değeri / Enum Value | Açıklama (TR) | Description (EN) |
-|---|---|---|---|
-| Adım sayısı | `HealthDataType.STEP_COUNT` | Günlük adım sayısı | Daily step count |
-| Kalori | `HealthDataType.CALORIES_CONSUMED` | Harcanan kalori | Calories burned |
-| Mesafe | `HealthDataType.DISTANCE` | Yürünen mesafe | Distance walked |
-| Kalp atışı | `HealthDataType.HEART_RATE` | Anlık nabız | Instantaneous heart rate |
-| Uyku | `HealthDataType.SLEEP` | Uyku süresi ve aşamaları | Sleep duration and stages |
-| SpO2 | `HealthDataType.OXYGEN_SATURATION` | Kan oksijen saturasyonu | Blood oxygen saturation |
-| Stres | `HealthDataType.STRESS` | Stres seviyesi | Stress level |
-| Aktivite | `HealthDataType.EXERCISE` | Egzersiz oturumları | Exercise sessions |
-
-### Günlük Sağlık Verisi Okuma / Reading Daily Health Data
+### Reading Daily Health Data
 
 ```typescript
 import health from '@ohos.health';
 import { BusinessError } from '@kit.BasicServicesKit';
 
-// Bugünün adım verisini oku / Read today's step data
+// Read today's step data
 async function getTodaySteps(): Promise<number> {
   const today = new Date();
   const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
@@ -604,7 +593,7 @@ async function getTodaySteps(): Promise<number> {
   }
 }
 
-// Uyku verisini oku / Read sleep data
+// Read sleep data
 async function getLastNightSleep(): Promise<health.SleepRecord | null> {
   const now = Date.now();
   const yesterday = now - 86400000;
@@ -628,7 +617,7 @@ async function getLastNightSleep(): Promise<health.SleepRecord | null> {
   }
 }
 
-// Health data yaz / Write health data
+// Write health data
 async function writeStepData(steps: number, startTime: number, endTime: number): Promise<void> {
   try {
     const record: health.HealthDataRecord = {
@@ -647,7 +636,7 @@ async function writeStepData(steps: number, startTime: number, endTime: number):
 }
 ```
 
-### Health Dashboard Bileşeni / Health Dashboard Component
+### Health Dashboard Component
 
 ```typescript
 import health from '@ohos.health';
@@ -669,7 +658,7 @@ struct HealthDashboard {
     const dayStart = now - (now % 86400000);
 
     try {
-      // Adım verisi / Step data
+      // Step data
       const stepRecords = await health.readData({
         dataType: health.HealthDataType.STEP_COUNT,
         startTime: dayStart,
@@ -679,7 +668,7 @@ struct HealthDashboard {
         this.steps = stepRecords.reduce((s, r) => s + (r.value as number), 0);
       }
 
-      // Kalori verisi / Calorie data
+      // Calorie data
       const calRecords = await health.readData({
         dataType: health.HealthDataType.CALORIES_CONSUMED,
         startTime: dayStart,
@@ -695,12 +684,12 @@ struct HealthDashboard {
 
   build() {
     Column({ space: 8 }) {
-      Text('Sağlık / Health').fontSize(18).fontColor('#FFFFFF').fontWeight(FontWeight.Bold)
+      Text('Health').fontSize(18).fontColor('#FFFFFF').fontWeight(FontWeight.Bold)
         .margin({ top: 16, bottom: 8 })
 
       Grid() {
         GridItem() {
-          this.HealthCard('👟', `${this.steps.toLocaleString()}`, 'Adım / Steps', '#4CAF50')
+          this.HealthCard('👟', `${this.steps.toLocaleString()}`, 'Steps', '#4CAF50')
         }
         GridItem() {
           this.HealthCard('❤️', `${this.heartRate}`, 'BPM', '#F44336')
@@ -709,7 +698,7 @@ struct HealthDashboard {
           this.HealthCard('🔥', `${this.calories}`, 'kcal', '#FF9800')
         }
         GridItem() {
-          this.HealthCard('💤', `${this.sleepHours.toFixed(1)}h`, 'Uyku / Sleep', '#9C27B0')
+          this.HealthCard('💤', `${this.sleepHours.toFixed(1)}h`, 'Sleep', '#9C27B0')
         }
       }
       .columnsTemplate('1fr 1fr')
@@ -736,13 +725,11 @@ struct HealthDashboard {
 
 ---
 
-## 5. Distributed Data / Dağıtık Veri
+## 5. Distributed Data
 
-**TR:** `@ohos.distributedKVStore` modülü, HarmonyOS cihazları arasında (telefon ↔ saat) gerçek zamanlı veri paylaşımı sağlar. Dağıtık veri yönetimi, çoklu cihaz deneyiminin temelini oluşturur.
+The `@ohos.distributedKVStore` module provides real-time data sharing between HarmonyOS devices (phone ↔ watch). Distributed data management is the foundation of multi-device experiences.
 
-**EN:** The `@ohos.distributedKVStore` module provides real-time data sharing between HarmonyOS devices (phone ↔ watch). Distributed data management is the foundation of multi-device experiences.
-
-### Kurulum / Setup
+### Setup
 
 ```typescript
 import distributedKVStore from '@ohos.data.distributedKVStore';
@@ -780,10 +767,10 @@ async function createDistributedStore(
 }
 ```
 
-### Veri Yazma ve Okuma / Write and Read Data
+### Write and Read Data
 
 ```typescript
-// Veri yaz / Write data
+// Write data
 async function writeHealthData(store: distributedKVStore.SingleKVStore, steps: number, heartRate: number): Promise<void> {
   try {
     await store.put('currentSteps', steps);
@@ -796,7 +783,7 @@ async function writeHealthData(store: distributedKVStore.SingleKVStore, steps: n
   }
 }
 
-// Veri oku / Read data
+// Read data
 async function readHealthData(
   store: distributedKVStore.SingleKVStore
 ): Promise<{ steps: number; heartRate: number } | null> {
@@ -816,10 +803,10 @@ async function readHealthData(
 }
 ```
 
-### Değişiklikleri Dinleme / Listening to Changes
+### Listening to Changes
 
 ```typescript
-// Veri değişikliği dinleyicisi / Data change listener
+// Data change listener
 function subscribeToChanges(store: distributedKVStore.SingleKVStore, onUpdate: (data: object) => void): void {
   store.on('dataChange', distributedKVStore.SubscribeType.SUBSCRIBE_TYPE_ALL, (data) => {
     console.info(`[KVStore] Data changed: ${JSON.stringify(data)}`);
@@ -827,19 +814,18 @@ function subscribeToChanges(store: distributedKVStore.SingleKVStore, onUpdate: (
   });
 }
 
-// Dinleyiciyi kaldır / Remove listener
+// Remove listener
 function unsubscribeFromChanges(store: distributedKVStore.SingleKVStore): void {
   store.off('dataChange');
 }
 ```
 
-### Dağıtık Veri Senkronizasyonu / Distributed Data Sync
+### Distributed Data Sync
 
 ```typescript
-// Cihazlar arası senkronizasyon tetikle / Trigger cross-device sync
+// Trigger cross-device sync
 async function syncWithDevices(store: distributedKVStore.SingleKVStore): Promise<void> {
   try {
-    // deviceIds boş bırakılırsa tüm güvenilir cihazlar ile senkronize edilir
     // If deviceIds is empty, sync with all trusted devices
     await store.sync([], distributedKVStore.SyncMode.PULL_ONLY);
     console.info('[KVStore] Sync triggered');
@@ -852,32 +838,28 @@ async function syncWithDevices(store: distributedKVStore.SingleKVStore): Promise
 
 ---
 
-## 6. İzinler / Permissions
+## 6. Permissions
 
-**TR:** HarmonyOS uygulamaları, hassas kaynaklara erişmeden önce ilgili izinleri hem `module.json5`'te bildirmeli, hem de çalışma zamanında kullanıcıdan istemelidir.
+HarmonyOS applications must both declare the relevant permissions in `module.json5` and request them from the user at runtime before accessing sensitive resources.
 
-**EN:** HarmonyOS applications must both declare the relevant permissions in `module.json5` and request them from the user at runtime before accessing sensitive resources.
+### Wearable Permission Reference Table
 
-### Wearable İzin Referans Tablosu / Wearable Permission Reference Table
-
-| İzin / Permission | Tür / Type | Kullanım / Usage | API |
+| Permission | Type | Usage | API |
 |---|---|---|---|
-| `ohos.permission.ACTIVITY_MOTION` | user_grant | Hareket ve adım sensörleri | `sensor.PEDOMETER`, `sensor.PEDOMETER_DETECTION`, `sensor.SIGNIFICANT_MOTION` |
-| `ohos.permission.READ_HEALTH_DATA` | user_grant | Sağlık verisi okuma | `sensor.HEART_RATE`, `health.readData()` |
-| `ohos.permission.WRITE_HEALTH_DATA` | user_grant | Sağlık verisi yazma | `health.writeData()` |
-| `ohos.permission.LOCATION` | user_grant | GPS konumu | `geoLocationManager` |
-| `ohos.permission.APPROXIMATELY_LOCATION` | user_grant | Yaklaşık konum | `geoLocationManager` |
-| `ohos.permission.DISTRIBUTED_DATASYNC` | user_grant | Dağıtık veri senkronizasyonu | `distributedKVStore` |
-| `ohos.permission.VIBRATE` | system_grant | Titreşim | `vibrator` |
-| `ohos.permission.KEEP_BACKGROUND_RUNNING` | system_grant | Arka plan çalışma | Background task |
-| `ohos.permission.INTERNET` | system_grant | İnternet erişimi | HTTP, WebSocket |
-| `ohos.permission.NOTIFICATION_CONTROLLER` | system_grant | Bildirim yönetimi | `notificationManager` |
+| `ohos.permission.ACTIVITY_MOTION` | user_grant | Motion and step sensors | `sensor.PEDOMETER`, `sensor.PEDOMETER_DETECTION`, `sensor.SIGNIFICANT_MOTION` |
+| `ohos.permission.READ_HEALTH_DATA` | user_grant | Read health data | `sensor.HEART_RATE`, `health.readData()` |
+| `ohos.permission.WRITE_HEALTH_DATA` | user_grant | Write health data | `health.writeData()` |
+| `ohos.permission.LOCATION` | user_grant | GPS location | `geoLocationManager` |
+| `ohos.permission.APPROXIMATELY_LOCATION` | user_grant | Approximate location | `geoLocationManager` |
+| `ohos.permission.DISTRIBUTED_DATASYNC` | user_grant | Distributed data sync | `distributedKVStore` |
+| `ohos.permission.VIBRATE` | system_grant | Vibration | `vibrator` |
+| `ohos.permission.KEEP_BACKGROUND_RUNNING` | system_grant | Background execution | Background task |
+| `ohos.permission.INTERNET` | system_grant | Internet access | HTTP, WebSocket |
+| `ohos.permission.NOTIFICATION_CONTROLLER` | system_grant | Notification management | `notificationManager` |
 
-> **TR Notu:** `user_grant` izinleri çalışma zamanında kullanıcıdan istenmeli; `system_grant` izinleri yalnızca `module.json5`'e eklenmesi yeterlidir.
->
-> **EN Note:** `user_grant` permissions must be requested from the user at runtime; `system_grant` permissions only need to be added to `module.json5`.
+> **Note:** `user_grant` permissions must be requested from the user at runtime; `system_grant` permissions only need to be added to `module.json5`.
 
-### module.json5'te İzin Bildirimi / Permission Declaration in module.json5
+### Permission Declaration in module.json5
 
 ```json
 {
@@ -910,7 +892,7 @@ async function syncWithDevices(store: distributedKVStore.SingleKVStore): Promise
 }
 ```
 
-### Çalışma Zamanı İzin İsteme / Runtime Permission Request
+### Runtime Permission Request
 
 ```typescript
 import { abilityAccessCtrl, common, Permissions } from '@kit.AbilityKit';
@@ -923,11 +905,11 @@ class PermissionManager {
     this.context = context;
   }
 
-  // Tek izin kontrol ve istek / Single permission check and request
+  // Single permission check and request
   async ensurePermission(permission: Permissions): Promise<boolean> {
     const atManager = abilityAccessCtrl.createAtManager();
 
-    // Önce mevcut durumu kontrol et / First check current status
+    // First check current status
     try {
       const tokenId = this.context.applicationInfo.accessTokenId;
       const status = await atManager.checkAccessToken(tokenId, permission);
@@ -936,10 +918,10 @@ class PermissionManager {
         return true;
       }
     } catch (err) {
-      // Token kontrolü başarısız, izni iste / Token check failed, request permission
+      // Token check failed, request permission
     }
 
-    // İzni kullanıcıdan iste / Request permission from user
+    // Request permission from user
     try {
       const result = await atManager.requestPermissionsFromUser(this.context, [permission]);
       return result.authResults[0] === abilityAccessCtrl.GrantStatus.PERMISSION_GRANTED;
@@ -950,7 +932,7 @@ class PermissionManager {
     }
   }
 
-  // Birden fazla izni toplu iste / Request multiple permissions at once
+  // Request multiple permissions at once
   async ensurePermissions(permissions: Permissions[]): Promise<Map<Permissions, boolean>> {
     const atManager = abilityAccessCtrl.createAtManager();
     const result = new Map<Permissions, boolean>();
@@ -971,17 +953,13 @@ class PermissionManager {
 
 ---
 
-## 7. Wearable-Özel UI / Wearable-Specific UI
+## 7. Wearable-Specific UI
 
-**TR:** HarmonyOS wearable platformu, saat kadranı geliştirme, dijital taç (crown) olayları ve titreşim geri bildirimi gibi wearable'a özgü yetenekler sunar.
+The HarmonyOS wearable platform offers wearable-specific capabilities such as watch face development, digital crown events, and vibration feedback.
 
-**EN:** The HarmonyOS wearable platform offers wearable-specific capabilities such as watch face development, digital crown events, and vibration feedback.
+### Crown (Digital Crown) Events
 
-### Crown (Dijital Taç) Olayları / Crown (Digital Crown) Events
-
-**TR:** Bazı akıllı saatler dijital taç içerir. Bu taçtan gelen dönme olaylarını yakalayabilirsiniz.
-
-**EN:** Some smartwatches include a digital crown. You can capture rotation events from this crown.
+Some smartwatches include a digital crown. You can capture rotation events from this crown.
 
 ```typescript
 @Entry
@@ -1009,10 +987,9 @@ struct CrownEventDemo {
     }
     .width('100%').height('100%').backgroundColor('#000000')
     .alignItems(HorizontalAlign.Center).justifyContent(FlexAlign.Center)
-    // Crown olaylarını yakala / Capture crown events
+    // Capture crown events
     .focusable(true)
     .onKeyEvent((event: KeyEvent) => {
-      // Crown dönüşü KeyCode.KEYCODE_VOLUME_UP / KEYCODE_VOLUME_DOWN olarak gelir
       // Crown rotation comes as KeyCode.KEYCODE_VOLUME_UP / KEYCODE_VOLUME_DOWN
       if (event.type === KeyType.Down) {
         if (event.keyCode === 2043) { // KEYCODE_VOLUME_UP / Crown clockwise
@@ -1026,26 +1003,24 @@ struct CrownEventDemo {
 }
 ```
 
-### Titreşim API / Vibration API
+### Vibration API
 
-**TR:** `@ohos.vibrator` modülü, wearable cihazda haptic geri bildirim sağlar. `ohos.permission.VIBRATE` izni gerektirir.
-
-**EN:** The `@ohos.vibrator` module provides haptic feedback on wearable devices. Requires the `ohos.permission.VIBRATE` permission.
+The `@ohos.vibrator` module provides haptic feedback on wearable devices. Requires the `ohos.permission.VIBRATE` permission.
 
 ```typescript
 import vibrator from '@ohos.vibrator';
 import { BusinessError } from '@kit.BasicServicesKit';
 
-// Önceden tanımlı efektler / Predefined effects
+// Predefined effects
 async function vibrateEffect(effect: string = 'haptic.clock.timer'): Promise<void> {
   try {
     await vibrator.startVibration({
       type: 'preset',
       effectId: effect,
-      // Yaygın efektler / Common effects:
-      // 'haptic.clock.timer'     — saat tıklaması / clock tick
-      // 'haptic.long_press.light' — hafif uzun basış / light long press
-      // 'haptic.long_press.medium' — orta uzun basış / medium long press
+      // Common effects:
+      // 'haptic.clock.timer'     — clock tick
+      // 'haptic.long_press.light' — light long press
+      // 'haptic.long_press.medium' — medium long press
       count: 1,
     }, {
       usage: 'touch', // 'touch' | 'alarm' | 'notification' | 'communication' | 'unknown'
@@ -1056,9 +1031,8 @@ async function vibrateEffect(effect: string = 'haptic.clock.timer'): Promise<voi
   }
 }
 
-// Özel titreşim deseni / Custom vibration pattern
+// Custom vibration pattern
 async function vibratePattern(pattern: number[]): Promise<void> {
-  // pattern: [bekle, titrет, bekle, titret, ...] ms cinsinden
   // pattern: [wait, vibrate, wait, vibrate, ...] in ms
   try {
     await vibrator.startVibration({
@@ -1073,7 +1047,7 @@ async function vibratePattern(pattern: number[]): Promise<void> {
   }
 }
 
-// Titreşimi durdur / Stop vibration
+// Stop vibration
 async function stopVibration(): Promise<void> {
   try {
     await vibrator.stopVibration();
@@ -1083,12 +1057,12 @@ async function stopVibration(): Promise<void> {
   }
 }
 
-// Kullanım örnekleri / Usage examples
+// Usage examples
 async function demonstrateVibration(): Promise<void> {
-  // Başarı titreşimi / Success vibration
+  // Success vibration
   await vibrateEffect('haptic.clock.timer');
 
-  // Uyarı titreşimi (3 kısa) / Warning vibration (3 short)
+  // Warning vibration (3 short)
   for (let i = 0; i < 3; i++) {
     await vibrator.startVibration({ type: 'time', duration: 100 }, { usage: 'alarm' });
     await new Promise(resolve => setTimeout(resolve, 200));
@@ -1096,14 +1070,12 @@ async function demonstrateVibration(): Promise<void> {
 }
 ```
 
-### Watch Face Geliştirme Temelleri / Watch Face Development Basics
+### Watch Face Development Basics
 
-**TR:** Özel saat kadranları `@ohos.app.form` modülü ile Service Widget olarak geliştirilir. Wearable'da özel watch face için `formType: watchface` olmalıdır.
-
-**EN:** Custom watch faces are developed as Service Widgets using the `@ohos.app.form` module. For custom watch faces on wearables, `formType: watchface` is required.
+Custom watch faces are developed as Service Widgets using the `@ohos.app.form` module. For custom watch faces on wearables, `formType: watchface` is required.
 
 ```typescript
-// Watch face için temel ArkUI şablonu / Basic ArkUI template for watch face
+// Basic ArkUI template for watch face
 @Entry
 @Component
 struct WatchFaceTemplate {
@@ -1129,7 +1101,7 @@ struct WatchFaceTemplate {
     this.hours = now.getHours() % 12;
     this.minutes = now.getMinutes();
     this.seconds = now.getSeconds();
-    this.dateString = now.toLocaleDateString('tr-TR', {
+    this.dateString = now.toLocaleDateString('en-US', {
       weekday: 'short',
       month: 'short',
       day: 'numeric'
@@ -1142,16 +1114,16 @@ struct WatchFaceTemplate {
 
   build() {
     Stack({ alignContent: Alignment.Center }) {
-      // Arka plan / Background
+      // Background
       Circle({ width: '100%', height: '100%' }).fill('#0A0A0A')
 
-      // Saat çerçevesi / Watch bezel
+      // Watch bezel
       Circle({ width: '95%', height: '95%' })
         .fill('none')
         .stroke('#333333')
         .strokeWidth(2)
 
-      // Saat ve tarih / Time and date
+      // Time and date
       Column({ space: 4 }) {
         Text(`${this.formatTime(this.hours)}:${this.formatTime(this.minutes)}`)
           .fontSize(52)
@@ -1178,22 +1150,20 @@ struct WatchFaceTemplate {
 
 ---
 
-## 8. Lifecycle / Yaşam Döngüsü
+## 8. Lifecycle
 
-**TR:** HarmonyOS Stage modeli, uygulamanın ve bileşenlerin yaşam döngüsünü yönetir. Doğru lifecycle metodlarını kullanmak, bellek sızıntılarını ve sensör açık kalmasını önler.
-
-**EN:** The HarmonyOS Stage model manages the lifecycle of applications and components. Using the correct lifecycle methods prevents memory leaks and sensors being left on.
+The HarmonyOS Stage model manages the lifecycle of applications and components. Using the correct lifecycle methods prevents memory leaks and sensors being left on.
 
 ### UIAbility Lifecycle
 
-| Metod / Method | Tetikleyici / Trigger | Kullanım Amacı (TR) | Use Case (EN) |
-|---|---|---|---|
-| `onCreate(want, launchParam)` | İlk başlatma | Başlangıç verileri yükle, kaynakları başlat | Load initial data, initialize resources |
-| `onWindowStageCreate(stage)` | Pencere hazır | UI yükle (`loadContent`), event listener kur | Load UI (`loadContent`), set up event listeners |
-| `onForeground()` | Ön plana geldi | Sensörleri başlat, timer'ları başlat | Start sensors, start timers |
-| `onBackground()` | Arka plana gitti | Sensörleri durdur, UI timer'ları iptal et | Stop sensors, cancel UI timers |
-| `onWindowStageDestroy()` | Pencere kapandı | Pencere kaynaklarını serbest bırak | Release window resources |
-| `onDestroy()` | Uygulama kapandı | Tüm kaynakları temizle, verileri kaydet | Clean up all resources, save data |
+| Method | Trigger | Use Case |
+|---|---|---|
+| `onCreate(want, launchParam)` | First launch | Load initial data, initialize resources |
+| `onWindowStageCreate(stage)` | Window ready | Load UI (`loadContent`), set up event listeners |
+| `onForeground()` | Came to foreground | Start sensors, start timers |
+| `onBackground()` | Went to background | Stop sensors, cancel UI timers |
+| `onWindowStageDestroy()` | Window closed | Release window resources |
+| `onDestroy()` | App closed | Clean up all resources, save data |
 
 ```typescript
 import { UIAbility, Want, AbilityConstant, window } from '@kit.AbilityKit';
@@ -1207,20 +1177,20 @@ const TAG = 'WearableAbility';
 export default class EntryAbility extends UIAbility {
   private sensorStarted: boolean = false;
 
-  // UIAbility ilk kez oluşturulduğunda / When UIAbility is created for the first time
+  // When UIAbility is created for the first time
   onCreate(want: Want, launchParam: AbilityConstant.LaunchParam): void {
     hilog.info(DOMAIN, TAG, 'onCreate');
-    // Uygulama başlatma işlemleri / Application initialization tasks
-    // - Veri tabanı bağlantısı / Database connection
-    // - Uygulama ayarları yükleme / Load app settings
-    // - Analitik başlatma / Analytics initialization
+    // Application initialization tasks
+    // - Database connection
+    // - Load app settings
+    // - Analytics initialization
   }
 
-  // Pencere oluşturulduğunda / When window is created
+  // When window is created
   onWindowStageCreate(windowStage: window.WindowStage): void {
     hilog.info(DOMAIN, TAG, 'onWindowStageCreate');
 
-    // Ana sayfayı yükle / Load main page
+    // Load main page
     windowStage.loadContent('pages/Index', (err) => {
       if (err.code) {
         hilog.error(DOMAIN, TAG, `loadContent failed: ${err.code}`);
@@ -1230,7 +1200,7 @@ export default class EntryAbility extends UIAbility {
     });
   }
 
-  // Uygulama ön plana geldiğinde / When app comes to foreground
+  // When app comes to foreground
   onForeground(): void {
     hilog.info(DOMAIN, TAG, 'onForeground');
 
@@ -1240,32 +1210,30 @@ export default class EntryAbility extends UIAbility {
     }
   }
 
-  // Uygulama arka plana gittiğinde / When app goes to background
+  // When app goes to background
   onBackground(): void {
     hilog.info(DOMAIN, TAG, 'onBackground');
 
-    // Yalnızca UI güncellemeleri için kullanılan sensörleri durdur
     // Stop sensors only used for UI updates
-    // Not: Sağlık takibi gibi süregelen sensörler arka planda devam edebilir
     // Note: Ongoing sensors like health tracking may continue in background
     this.stopUISensors();
   }
 
-  // Pencere yok edildiğinde / When window is destroyed
+  // When window is destroyed
   onWindowStageDestroy(): void {
     hilog.info(DOMAIN, TAG, 'onWindowStageDestroy');
-    // Pencere event listener'larını kaldır / Remove window event listeners
+    // Remove window event listeners
   }
 
-  // UIAbility yok edildiğinde / When UIAbility is destroyed
+  // When UIAbility is destroyed
   onDestroy(): void {
     hilog.info(DOMAIN, TAG, 'onDestroy');
 
-    // Tüm sensörleri kapat / Stop all sensors
+    // Stop all sensors
     this.stopAllSensors();
 
-    // Verileri kaydet / Save data
-    // Bağlantıları kapat / Close connections
+    // Save data
+    // Close connections
   }
 
   private startBackgroundSensors(): void {
@@ -1280,7 +1248,7 @@ export default class EntryAbility extends UIAbility {
   }
 
   private stopUISensors(): void {
-    // UI'ya yönelik sürekli güncellemeleri durdur / Stop continuous UI-oriented updates
+    // Stop continuous UI-oriented updates
   }
 
   private stopAllSensors(): void {
@@ -1296,19 +1264,17 @@ export default class EntryAbility extends UIAbility {
 }
 ```
 
-### Bileşen Lifecycle / Component Lifecycle
+### Component Lifecycle
 
-**TR:** `@Component` bileşenleri de kendi yaşam döngüsü metodlarına sahiptir:
+`@Component` components also have their own lifecycle methods:
 
-**EN:** `@Component` components also have their own lifecycle methods:
-
-| Metod / Method | Açıklama (TR) | Description (EN) |
-|---|---|---|
-| `aboutToAppear()` | Bileşen oluşturulmadan önce, `build()` öncesi | Before component is created, before `build()` |
-| `aboutToDisappear()` | Bileşen yok edilmeden önce | Before component is destroyed |
-| `onPageShow()` | Sayfa görünür olduğunda (sadece `@Entry`) | When page becomes visible (`@Entry` only) |
-| `onPageHide()` | Sayfa gizlendiğinde (sadece `@Entry`) | When page is hidden (`@Entry` only) |
-| `onBackPress()` | Geri tuşuna basıldığında (sadece `@Entry`) | When back button is pressed (`@Entry` only) |
+| Method | Description |
+|---|---|
+| `aboutToAppear()` | Before component is created, before `build()` |
+| `aboutToDisappear()` | Before component is destroyed |
+| `onPageShow()` | When page becomes visible (`@Entry` only) |
+| `onPageHide()` | When page is hidden (`@Entry` only) |
+| `onBackPress()` | When back button is pressed (`@Entry` only) |
 
 ```typescript
 @Entry
@@ -1317,17 +1283,17 @@ struct LifecycleDemo {
   @State data: string[] = [];
   private sensorActive: boolean = false;
 
-  // Bileşen oluşturulmadan önce veri yükle / Load data before component is created
+  // Load data before component is created
   aboutToAppear(): void {
-    console.info('[Lifecycle] aboutToAppear — Sensörler başlatılıyor / Starting sensors');
+    console.info('[Lifecycle] aboutToAppear — Starting sensors');
     this.loadInitialData();
     this.startSensors();
     this.sensorActive = true;
   }
 
-  // Bileşen yok edilmeden önce temizlik yap / Clean up before component is destroyed
+  // Clean up before component is destroyed
   aboutToDisappear(): void {
-    console.info('[Lifecycle] aboutToDisappear — Temizlik yapılıyor / Cleaning up');
+    console.info('[Lifecycle] aboutToDisappear — Cleaning up');
     if (this.sensorActive) {
       sensor.off(sensor.SensorId.PEDOMETER);
       sensor.off(sensor.SensorId.HEART_RATE);
@@ -1335,30 +1301,28 @@ struct LifecycleDemo {
     }
   }
 
-  // Sayfa görünür olduğunda (navigasyon geri gelince de tetiklenir)
   // When page is visible (also triggered on navigation back)
   onPageShow(): void {
     console.info('[Lifecycle] onPageShow');
-    // Verileri yenile / Refresh data
+    // Refresh data
   }
 
-  // Sayfa gizlendiğinde / When page is hidden
+  // When page is hidden
   onPageHide(): void {
     console.info('[Lifecycle] onPageHide');
-    // Animasyonları durdur / Stop animations
+    // Stop animations
   }
 
-  // Geri tuşunu özelleştir / Customize back button
+  // Customize back button
   onBackPress(): boolean {
     console.info('[Lifecycle] onBackPress');
-    // true döndürmek varsayılan geri davranışını engeller
     // Returning true prevents default back behavior
-    return false; // false = varsayılan davranış / false = default behavior
+    return false; // false = default behavior
   }
 
   private async loadInitialData(): Promise<void> {
-    // Başlangıç verilerini yükle / Load initial data
-    this.data = ['Yükleniyor... / Loading...'];
+    // Load initial data
+    this.data = ['Loading...'];
   }
 
   private startSensors(): void {
@@ -1379,49 +1343,49 @@ struct LifecycleDemo {
 
 ---
 
-## Hızlı Referans / Quick Reference
+## Quick Reference
 
-### Sık Kullanılan Import'lar / Commonly Used Imports
+### Commonly Used Imports
 
 ```typescript
-// Sensörler / Sensors
+// Sensors
 import { sensor } from '@kit.SensorServiceKit';
 
-// Sağlık / Health
+// Health
 import health from '@ohos.health';
 
-// Dağıtık veri / Distributed data
+// Distributed data
 import distributedKVStore from '@ohos.data.distributedKVStore';
 
-// İzin yönetimi / Permission management
+// Permission management
 import { abilityAccessCtrl, common, Permissions } from '@kit.AbilityKit';
 
-// Titreşim / Vibration
+// Vibration
 import vibrator from '@ohos.vibrator';
 
-// Hata tipi / Error type
+// Error type
 import { BusinessError } from '@kit.BasicServicesKit';
 
-// Loglama / Logging
+// Logging
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
-// Tercihler / Preferences
+// Preferences
 import dataPreferences from '@ohos.data.preferences';
 
 // HTTP / Network
 import http from '@ohos.net.http';
 ```
 
-### Sensör Interval Değerleri / Sensor Interval Values
+### Sensor Interval Values
 
-| Seçenek / Option | Nanosaniye / Nanoseconds | Kullanım / Use Case |
+| Option | Nanoseconds | Use Case |
 |---|---|---|
-| `'fastest'` | Cihaz minimumu / Device minimum | Gerçek zamanlı oyun / Real-time gaming |
-| `'game'` | ~20,000,000 ns (20ms) | Hareket izleme / Motion tracking |
-| `'ui'` | ~60,000,000 ns (60ms) | UI animasyonları / UI animations |
-| `'normal'` | ~200,000,000 ns (200ms) | Genel kullanım / General use |
-| `1000000000` | 1,000,000,000 ns (1s) | Sağlık izleme / Health monitoring |
+| `'fastest'` | Device minimum | Real-time gaming |
+| `'game'` | ~20,000,000 ns (20ms) | Motion tracking |
+| `'ui'` | ~60,000,000 ns (60ms) | UI animations |
+| `'normal'` | ~200,000,000 ns (200ms) | General use |
+| `1000000000` | 1,000,000,000 ns (1s) | Health monitoring |
 
 ---
 
-*Son güncelleme / Last updated: March 2026 | HarmonyOS API Level 11+ | DevEco Studio 4.1+*
+*Last updated: March 2026 | HarmonyOS API Level 11+ | DevEco Studio 4.1+*
