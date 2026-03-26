@@ -1,0 +1,91 @@
+{
+  "apiType": "stageMode",
+
+  // ── Uygulama Genelinde Ayarlar ──────────────────────────────────
+  "app": {
+    // Desteklenen işlemci mimarileri
+    // arm64-v8a: Modern wearable cihazlar (64-bit ARM)
+    // armeabi-v7a: Eski/düşük güçlü wearable cihazlar (32-bit ARM)
+    "signingConfigs": [],
+    "compileSdkVersion": 11,
+    "compatibleSdkVersion": 10,
+    "products": [
+      {
+        // Wearable ürün profili
+        "name": "wearable_release",
+        "signingConfig": "default",
+        "compileSdkVersion": 11,
+        "compatibleSdkVersion": 10,
+        "runtimeOS": "HarmonyOS",
+
+        // Wearable için optimize edilmiş build ayarları
+        "buildOption": {
+          "externalNativeOptions": {
+            "path": "",
+            "arguments": "",
+            "cppFlags": ""
+          },
+          "sourceOption": {
+            "workers": []
+          }
+        }
+      }
+    ]
+  },
+
+  // ── Modül Build Konfigürasyonu ──────────────────────────────────
+  "modules": [
+    {
+      // Modül adı (module.json5 ile eşleşmeli)
+      "name": "entry",
+
+      // Kaynak kod yolu
+      "srcPath": "./entry",
+
+      // Build hedefleri
+      "targets": [
+        {
+          // Wearable Debug Hedefi
+          "name": "wearable_debug",
+          "applyToProducts": ["wearable_release"],
+
+          // Debug build özellikleri
+          "runtimeOS": "HarmonyOS",
+          "buildOption": {
+            // ArkTS derleyici ayarları
+            "arkOptions": {
+              // Satır içi inlining optimizasyonu (küçük cihazlar için kapalı)
+              "obfuscation": {
+                "ruleOptions": {
+                  "enable": false,
+                  "files": []
+                }
+              }
+            }
+          }
+        },
+        {
+          // Wearable Release Hedefi
+          "name": "wearable_release",
+          "applyToProducts": ["wearable_release"],
+
+          "runtimeOS": "HarmonyOS",
+          "buildOption": {
+            "arkOptions": {
+              // Release: Kod gizleme ve minifikasyon aktif
+              "obfuscation": {
+                "ruleOptions": {
+                  "enable": true,
+                  "files": [
+                    // Gizleme kural dosyası
+                    "./obfuscation-rules.txt"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

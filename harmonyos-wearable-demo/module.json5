@@ -1,0 +1,145 @@
+{
+  "module": {
+    // Modül adı - paket içindeki benzersiz tanımlayıcı
+    "name": "entry",
+
+    // Modül tipi: entry = uygulamanın ana giriş modülü
+    "type": "entry",
+
+    // Açıklama metni (opsiyonel)
+    "description": "$string:module_desc",
+
+    // Ana ability bileşeni
+    "mainElement": "EntryAbility",
+
+    // Hedef cihaz tipleri
+    // "wearable" = HarmonyOS akıllı saat
+    "deviceTypes": [
+      "wearable"
+    ],
+
+    // Teslim modu: birlikte teslim (on demand değil)
+    "deliveryWithInstall": true,
+
+    // Yükleme: uygulama kurulduğunda otomatik yükle
+    "installationFree": false,
+
+    // Sayfa yönlendirme profili
+    "pages": "$profile:main_pages",
+
+    // Ability tanımları
+    "abilities": [
+      {
+        // Ability sınıf adı
+        "name": "EntryAbility",
+
+        // Kaynak kodu yolu
+        "srcEntry": "./ets/entryability/EntryAbility.ets",
+
+        // Açıklama (resource referansı)
+        "description": "$string:EntryAbility_desc",
+
+        // Ability ikonu
+        "icon": "$media:icon",
+
+        // Uygulamanın görünen adı
+        "label": "$string:EntryAbility_label",
+
+        // Başlangıç sayfası
+        "startWindowIcon": "$media:startIcon",
+
+        // Başlangıç ekranı arka plan rengi
+        "startWindowBackground": "$color:start_window_background",
+
+        // Bu ability'nin dışarıdan başlatılabilir olup olmadığı
+        "exported": true,
+
+        // Yönlendirme filtreleri
+        "skills": [
+          {
+            // Bu ability'nin işleyebileceği entity tipi
+            "entities": [
+              "entity.system.home"
+            ],
+            // İşleyebileceği action türleri
+            "actions": [
+              "action.system.home"
+            ]
+          }
+        ],
+
+        // Wearable'a özgü ayarlar
+        "metadata": [
+          {
+            "name": "ohos.module.window.design",
+            "value": "wearable"
+          }
+        ]
+      }
+    ],
+
+    // Uygulama izinleri
+    "requestPermissions": [
+      {
+        // Sensör okuma izni (adım sayar, kalp atışı)
+        "name": "ohos.permission.ACTIVITY_MOTION",
+        "reason": "$string:permission_motion_reason",
+        "usedScene": {
+          "abilities": ["EntryAbility"],
+          "when": "always"
+        }
+      },
+      {
+        // Sağlık verisi okuma izni
+        "name": "ohos.permission.READ_HEALTH_DATA",
+        "reason": "$string:permission_health_reason",
+        "usedScene": {
+          "abilities": ["EntryAbility"],
+          "when": "always"
+        }
+      },
+      {
+        // Dağıtık cihaz keşif izni (telefon senkronizasyonu)
+        "name": "ohos.permission.DISTRIBUTED_DATASYNC",
+        "reason": "$string:permission_distributed_reason",
+        "usedScene": {
+          "abilities": ["EntryAbility"],
+          "when": "inuse"
+        }
+      },
+      {
+        // Bluetooth BLE izni (cihaz eşleştirme)
+        "name": "ohos.permission.USE_BLUETOOTH",
+        "reason": "$string:permission_bluetooth_reason",
+        "usedScene": {
+          "abilities": ["EntryAbility"],
+          "when": "inuse"
+        }
+      },
+      {
+        // Arka planda sensör okuma (uyku takibi)
+        "name": "ohos.permission.KEEP_BACKGROUND_RUNNING",
+        "reason": "$string:permission_background_reason",
+        "usedScene": {
+          "abilities": ["EntryAbility"],
+          "when": "always"
+        }
+      },
+      {
+        // Titreşim izni (uyarılar için)
+        "name": "ohos.permission.VIBRATE",
+        "usedScene": {
+          "abilities": ["EntryAbility"],
+          "when": "inuse"
+        }
+      }
+    ],
+
+    // Arka plan servis türleri
+    "backgroundModes": [
+      "dataTransfer",       // Veri transferi (senkronizasyon)
+      "location",           // Konum (adım mesafesi için)
+      "healthSport"         // Sağlık ve spor takibi
+    ]
+  }
+}
